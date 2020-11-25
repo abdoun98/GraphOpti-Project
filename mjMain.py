@@ -69,7 +69,6 @@ if __name__ == '__main__':
         return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
 
 
-
     def evalue(listeRing, listeHorsRing, listeLienHorsRing):
         c=0
         for i in range(len(listeRing)):
@@ -91,6 +90,48 @@ if __name__ == '__main__':
                     meilleurCout=cout
                     mListeRing=copy.deepcopy(copListeRing)
         return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
+
+    #nous sommes au sommet "sommet" et nous voulons calculer la probabilité d'aller en chaque sommet de "element"
+    def calculer_vecteur_proba(alpha, beta, element, nonvisite, visibilite, ferom):
+        P=[]
+        denom=0
+        for i in range(len(nonvisite)):
+            denom += ferom[i] ** alpha + visibilite[i] ** beta
+        for elmt in range(len(element)):
+            if element[elmt] in nonvisite:
+                #print(visibilite[elmt] ** beta)
+                P+=[(ferom[elmt]**alpha+visibilite[elmt]**beta)/denom]
+            else:
+                P+=[0]
+        return P
+
+    def donneVisibilite(n,element):
+        visibilite=[]
+        for elm in range(len(element)):
+            if Cr[elm][n]==0:
+                visibilite +=[0]
+            else:
+                visibilite += [1 / Cr[elm][n]]
+        return visibilite
+
+    def fourmi(alpha,beta,listeRing):
+        n=random.randint(0,len(listeRing)-1)
+        element=copy.deepcopy(listeRing)
+        nonvisite=copy.deepcopy(listeRing)
+        ferom=np.zeros((len(listeRing),len(listeRing))).tolist()
+        listeSommet=[listeRing[n]]
+        nonvisite.remove(listeRing[n])
+        i=0
+        while len(nonvisite)>0:
+            i+=1
+            visibilite=donneVisibilite(n,element)
+            P=calculer_vecteur_proba(alpha, beta, element, nonvisite, visibilite, ferom[n])
+            n=random.choices(element,P,k=1)[0]
+            nonvisite.remove(n)
+            listeSommet+=[n]
+            n=element.index(n)
+        return listeSommet
+
 
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
@@ -116,6 +157,7 @@ if __name__ == '__main__':
 
         print(Ca[1][2])
         print("fin d'extraction des donnees")
-        meilleurCout, mListeRing, mListeHorsRing,mListeLienHorsRing = tabou(10000,500)
-        print(meilleurCout)
+        listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
+        mListeRing=fourmi(0.5,0.5,listeRing)
+        print(mListeRing)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
