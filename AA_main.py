@@ -10,7 +10,7 @@ def data_extract(file):
         data = data.split()
         data = list(map(int, data))
         N = data[0]  # Nombre de sommets du problème
-        print(N)
+        #print(N)
 
         for i in range(N):
             sommet = f.readline()
@@ -24,13 +24,13 @@ def data_extract(file):
             sommet2 = list(map(int, sommet2))
             Ca.append(sommet2)
 
-        print(Ca[1][2])
+        #print(Ca[1][2])
         print("fin d'extraction des donnees")
 
     return N, Ca, Cr
 
 def cout_ring(ring, Cr):
-    cout = Cr[ring[0]][ring[-1]]
+    cout = 0
     print(cout)
 
     for i in range(0, len(ring) - 1):
@@ -50,11 +50,45 @@ def cout_hors_ring(HR_liste, Ca):
 
 def permutation(liste, a, b):
 
-    liste[a], liste[b] = liste[b], liste[a]
+    temp = liste[a]
+    liste[a] = liste[b]
+    liste[b] = temp
+    print("liste avec permutation :{}".format(liste))
+
     return liste
 
+def remplacement(liste, a, N):
+
+    liste[a] = random.randint(1, N)
+    print("liste avec remplacement :{}".format(liste))
+
+    return liste
+
+def modification(liste, a, b, N):
+    choix = random.randint(1, 2)
+
+    if choix == 1:
+        liste = permutation(liste, a, b)
+    else:
+        liste = remplacement(liste, a, N)
+
+    return liste
 
 if __name__ == '__main__':
+    """
+    #test
+    N, Ca, Cr = data_extract("data1")
+
+    sol = [random.randint(1, N) for i in range(0, 4)]
+    cout_sol = cout_ring(sol, Cr)
+
+    sol_bis = modification(sol, 1, 2, Cr)
+    cout_sol_bis = cout_ring(sol_bis, Cr)
+
+    print("sol :{}\ncout sol :{}\n".format(sol, cout_sol))
+    print("sol bis :{}\ncout sol bis :{}\n".format(sol_bis, cout_sol_bis))
+    print("fin")
+    """
 
     taille_ring = 4
     history = []
@@ -63,7 +97,7 @@ if __name__ == '__main__':
     Tc = 100
     Tf = 0.01
     palier = 10
-    coeff = 0.9
+    coeff = 0.99
 
     N, Ca, Cr = data_extract("data1")
 
@@ -76,11 +110,11 @@ if __name__ == '__main__':
 
         cpt = 1
         while True:
-            sol_bis = permutation(sol, random.randint(0, taille_ring) - 1, random.randint(0, taille_ring) - 1)
+            sol_bis = modification(sol, random.randint(0, taille_ring) - 1, random.randint(0, taille_ring) - 1, N)
             cout_sol_bis = cout_ring(sol_bis, Cr)
 
             dE = cout_sol_bis - cout_sol
-            
+
             if dE <= 0:
                 sol = sol_bis
                 cout_sol = cout_sol_bis
@@ -98,10 +132,11 @@ if __name__ == '__main__':
                     history_cout.append(cout_sol)
 
             cpt += 1
-            if cpt == palier or Tc == 0:
+            if cpt == palier:
                 break
 
-        Tc = Tc - coeff * Tc
-        if Tc == Tf:
+        Tc = coeff * Tc
+        if Tc <= Tf:
             break
+    print("sol :{}\n cout sol :{}\n".format(sol, cout_sol))
     print("fin")
