@@ -45,6 +45,31 @@ if __name__ == '__main__':
         attributSommetRing(listeRing, listeHorsRing, listeLienHorsRing)
         return listeRing, listeHorsRing, listeLienHorsRing
 
+    def tabou(N,tailleMaxTabou):
+        mListeRing = []
+        listeTabou=[]
+        listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
+        meilleurCout=evalue(listeRing, listeHorsRing, listeLienHorsRing)
+        for i in range(N):
+            meilleurCoutLocal=math.inf
+            mListeRingLocal = []
+            for j in range(len(listeRing)):
+                copListeRing = copy.deepcopy(listeRing)
+                copListeRing = permuteRing(copListeRing, j)
+                cout = evalue(copListeRing, listeHorsRing, listeLienHorsRing)
+                if cout<meilleurCoutLocal and copListeRing not in listeTabou:
+                    meilleurCoutLocal=cout
+                    mListeRingLocal=copy.deepcopy(copListeRing)
+                    if meilleurCoutLocal<meilleurCout:
+                        meilleurCout=meilleurCoutLocal
+                        mListeRing=copy.deepcopy(mListeRingLocal)
+            listeTabou+=[mListeRing]
+            if len(listeTabou)>tailleMaxTabou:
+                listeTabou=listeTabou[1:]
+        return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
+
+
+
     def evalue(listeRing, listeHorsRing, listeLienHorsRing):
         c=0
         for i in range(len(listeRing)):
@@ -56,8 +81,6 @@ if __name__ == '__main__':
     def voisinageVariable(N):
         meilleurCout=math.inf
         mListeRing=[]
-        mListeHorsRing=[]
-        mListeLienHorsRing=[]
         for i in range(N):
             listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
             for j in range(len(listeRing)):
@@ -67,9 +90,7 @@ if __name__ == '__main__':
                 if cout<meilleurCout:
                     meilleurCout=cout
                     mListeRing=copy.deepcopy(copListeRing)
-                    mListeHorsRing=copy.deepcopy(listeHorsRing)
-                    mListeLienHorsRing=copy.deepcopy(listeLienHorsRing)
-        return meilleurCout, mListeRing, mListeHorsRing,mListeLienHorsRing
+        return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
 
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
@@ -95,6 +116,6 @@ if __name__ == '__main__':
 
         print(Ca[1][2])
         print("fin d'extraction des donnees")
-        meilleurCout, mListeRing, mListeHorsRing,mListeLienHorsRing = voisinageVariable(10000)
+        meilleurCout, mListeRing, mListeHorsRing,mListeLienHorsRing = tabou(10000,500)
         print(meilleurCout)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
