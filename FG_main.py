@@ -26,15 +26,15 @@ def initiate(N):
 
 # Initialisation aléatoire
 def initiaterandom(N):
-    RING = []
-    # STAR contient initialement tous les sommets nommés: 1 -> N
-    STAR = np.array(np.linspace(1, N+1, N, endpoint=False), dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
+    RING = [1]
+    # STAR contient initialement tous les sommets nommés: 2 -> N
+    STAR = np.array(np.linspace(2, N+1, (N-1), endpoint=False), dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
     #print(STAR)
     # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N-1 (le ring doit contenir min 1 elem)
     nbr = random.randint(1, N)
     for i in range(nbr):
         # numéro du sommet à switch
-        n = random.randint(0, N - i - 1)  # 0 -> (N-1) car correspond à l'indice du sommet et non à sa valeur
+        n = random.randint(0, N - i - 2)  # 0 -> (N-2) car correspond à l'indice du sommet et non à sa valeur
         RING.append(STAR[n])
         STAR.remove(STAR[n])
     return RING, STAR
