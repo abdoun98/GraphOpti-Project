@@ -31,7 +31,7 @@ def initiaterandom(N):
     STAR = np.array(np.linspace(2, N+1, (N-1), endpoint=False), dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
     #print(STAR)
     # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N-1 (le ring doit contenir min 1 elem)
-    nbr = random.randint(1, N)
+    nbr = random.randint(0, N-1)
     for i in range(nbr):
         # numéro du sommet à switch
         n = random.randint(0, N - i - 2)  # 0 -> (N-2) car correspond à l'indice du sommet et non à sa valeur
