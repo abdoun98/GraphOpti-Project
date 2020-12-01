@@ -26,15 +26,16 @@ def initiate(N):
 
 # Initialisation aléatoire
 def initiaterandom(N):
-    RING = []
-    # STAR contient initialement tous les sommets nommés: 1 -> N+1
-    STAR = np.array(np.linspace(1, N+1, N, endpoint=False), dtype='int').tolist()  # linspace(START, STOP, nrbe éléments)
+    RING = [1]
+    # STAR contient initialement tous les sommets nommés: 2 -> N
+    STAR = np.array(np.linspace(2, N + 1, (N - 1), endpoint=False),
+                    dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
     # print(STAR)
-    # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N
-    nbr = random.randint(0, N)
+    # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N-1 (le ring doit contenir min 1 elem)
+    nbr = random.randint(0, N - 1)
     for i in range(nbr):
         # numéro du sommet à switch
-        n = random.randint(0, N - i - 1)  # 0 -> (N-1) car correspond à l'indice du sommet et non à sa valeur
+        n = random.randint(0, N - i - 2)  # 0 -> (N-2) car correspond à l'indice du sommet et non à sa valeur
         RING.append(STAR[n])
         STAR.remove(STAR[n])
     return RING, STAR
@@ -44,7 +45,7 @@ def initiaterandom(N):
 # cost et PEER #
 ################
 # Retourne le coût total et les arcs optimaux (PEER) pour le STAR
-def evaluate(RING, STAR, N):
+def evaluate(RING, STAR, N, Cr, Ca):
     c = 0
     PEER = []  # Contient les arcs optimaux pour STAR
     # Coût du RING
@@ -52,17 +53,64 @@ def evaluate(RING, STAR, N):
         c += Cr[RING[i] - 1][RING[i + 1] - 1]
     # MAJ de PEER et du coût
     for e in STAR:
-        cmin = Cr[e - 1][0]
+        cmin = Ca[e - 1][0]
         i_min = 0
         for i in range(N):
-            if Cr[e - 1][i] == 0:
+            if Ca[e - 1][i] == 0 and i == 0:  # dans le cas où 1 est dans le STAR
+                cmin = Ca[e - 1][i + 1]
+            elif Ca[e - 1][i] == 0:
                 continue
-            elif Cr[e - 1][i] < cmin:
-                cmin = Cr[e - 1][i]
-                i_min = i + 1
+            elif Ca[e - 1][i] < cmin:
+                cmin = Ca[e - 1][i]
+                i_min = i
         PEER.append([e, i_min + 1])
         c += cmin
     return c, PEER
+
+
+##################
+# Evolutionnaire #
+##################
+class Individu:
+    def __init__(self, RING, STAR, PEER, Cost):
+        self.RING = RING
+        self.STAR = STAR
+        self.PEER = PEER
+        self.Cost = Cost
+
+
+def evolutionnaire(N, Cr, Ca):
+    T = 4  # Taille de la population
+    G = 2  # Nombre maximal de génération
+    Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
+    Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
+
+    # Initialisation
+    Population = []
+    for i in range(T):
+        RING, STAR = initiaterandom(N)
+        c, PEER = evaluate(RING, STAR, N, Cr, Ca)
+        Population.append(Individu(RING, STAR, PEER, c))
+
+    # Sélection
+    Couple = []
+    pop = [i for i in range(0, T)]
+    for i in range(int(T/2)):
+        A = random.choice(pop)
+        pop.remove(A)
+        B = random.choice(pop)
+        pop.remove(B)
+        Couple.append([Population[A], Population[B]])
+
+    #Croisement
+
+
+    # Affichage
+    for i in range(T):
+        print("Individu " + str(i + 1) + "\n" + "RING : " + str(Population[i].RING) + "\n" + "STAR : " + str(Population[i].STAR) + "\n" + "PEER : "
+              + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
+
+    return Population, Couple
 
 
 ########
@@ -102,23 +150,25 @@ if __name__ == '__main__':
     ##############
     #listeRing, listeHorsRing = initiate(N)
     listeRing, listeHorsRing = initiaterandom(N)
+    cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N, Cr, Ca)
 
-    cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N)
+    pop, couple = evolutionnaire(N, Cr, Ca)
+    print(pop)
+    print(couple)
+
 
     #####################
     # Affichage et test #
     #####################
 
-    print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
+    #print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
 
     """
     #Test des éléments
     sum = 0
     sum1 = 0
-
     for i in range(1, 52):
         sum += i  # valeur à laquelle on doit arriver
-
     for a in listeRing:
         sum1 += a
     for b in listeHorsRing:

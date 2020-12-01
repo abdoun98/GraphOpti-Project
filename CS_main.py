@@ -22,8 +22,10 @@ def createExample():
 def permRing(ring):
     #print("ping permRing")
     i = random.randrange(len(ring))
+    while i == 0:
+        i = random.randrange(len(ring))
     j = random.randrange(len(ring))
-    while i==j:
+    while i==j or j==0:
         j = random.randrange(len(ring))
     tmp = ring[i]
     ring[i] = ring[j]
@@ -37,20 +39,29 @@ def permStar(ring, link): #Comme mael a bien dit: on peut améliorer ca car on p
     link[i] = ring[j]
     return link
 
-def permOutOfRing(ring, star, link):
+
+
+def permOutOfRing(ring, star, link, Ca):
     #print("ping permOutOfRing")
     i = random.randrange(len(ring))
+    while i == 0:
+        i = random.randrange(len(ring))
     elem = ring[i]
-   # print(elem)
+    # print(elem)
     del ring[i]
 
     for i, j in enumerate(link):
         if elem == j:
-            link[i] = ring[random.randrange(len(ring))]
+            minimum = min([j for i, j in enumerate(Ca[elem - 1]) if i + 1 in ring])
+            minPos = Ca[elem - 1].index(minimum) + 1
+            link[i] = minPos
 
     star.append(elem)
-    j = random.randrange(len(ring))
-    link.append(ring[j])
+    #j = random.randrange(len(ring))
+    minimum = min([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
+    minPos = Ca[elem-1].index(minimum)+1
+    link.append(minPos)
+
     return ring, star, link
 def permIntoRing(ring, star, link):
     #print("ping permIntoRing")
@@ -61,61 +72,71 @@ def permIntoRing(ring, star, link):
     ring.append(elem)
     return ring, star, link
 
-def createMovement(ring, star, link):
-    select = random.randrange(4)
+def createMovement(ring, star, link, Ca):
+    select = random.randrange(3)
     if select == 0:
         if len(ring) <= 2:
-            createMovement(ring, star, link)
+            createMovement(ring, star, link, Ca)
         else:
             ring = permRing(ring)
+            '''
     elif select == 1:
         if len(star) <= 2:
             createMovement(ring, star, link)
         else:
             link = permStar(ring, link)
-    elif select == 2:
+            '''
+    elif select == 1:
         if len(ring) <= 1:
-            createMovement(ring, star, link)
+            createMovement(ring, star, link, Ca)
         else:
-            ring, star, link = permOutOfRing(ring, star, link)
+            ring, star, link = permOutOfRing(ring, star, link, Ca)
     else:
         if len(star) <= 0:
-            createMovement(ring,star,link)
+            createMovement(ring,star,link, Ca)
         else:
             ring, star, link = permIntoRing(ring, star, link)
 
     return ring, star, link
 
-def randomSolution(nbr):
+def randomSolution(nbr, Ca):
     ringRndTreshold = 0.5
-    listOfPoint = list(range(1, nbr+1))
+    listOfPoint = list(range(2, nbr+1))
 
     random.shuffle(listOfPoint)
-    ring = []
+    ring = [1]
+
     while len(ring) ==0:
         for i, elem in enumerate(listOfPoint):
             if random.random() <= ringRndTreshold:
                 ring.append(elem)
                 del listOfPoint[i]
+
     star = listOfPoint
     link = []
-    for i in star:
-        link.append(random.choice(ring))
+    for elem in star:
+        print(ring)
+        print(Ca[elem-1])
+        print([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
+        minimum = min([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
+        minPos = Ca[elem-1].index(minimum) + 1
+        link.append(minPos)
     return ring, star, link
 
+
 def recuit(Cr, Ca):
-    nbrItr = 10
+    nbrItr = 100
 
     size = len(Cr[0])
-    ring, star, link = randomSolution(size)
-    t = 100
-    tf = 0.01
-    N = 0.9
+    ring, star, link = randomSolution(size, Ca)
+    t = 10000
+    tf = 0.0001
+    N = 0.99
     currentScore = getScore(Cr, Ca, ring, star, link)
 
     while t > tf:
         for i in range(nbrItr):
-            newRing, newStar, newLink = createMovement(ring, star, link)
+            newRing, newStar, newLink = createMovement(ring, star, link, Ca)
             newScore = getScore(Cr, Ca, newRing, newStar, newLink)
             if newScore > currentScore:
                 currentScore = newScore
@@ -162,4 +183,11 @@ if __name__ == '__main__':
         print("fin d'extraction des donnees")
 
     ring, star, link = recuit(Cr, Ca)
-    print(getScore(Cr,Ca,ring,star, link))
+    print("---------------------")
+    print("RING = {}".format(ring))
+    print("STAR = {}".format(star))
+    print("LINK =")
+    for i, j in enumerate(link):
+        print([star[i], j])
+
+    print("SCORE = {}".format(getScore(Cr,Ca,ring,star, link)))
