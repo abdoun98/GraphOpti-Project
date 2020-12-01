@@ -27,11 +27,11 @@ def initiate(N):
 # Initialisation aléatoire
 def initiaterandom(N):
     RING = []
-    # STAR contient initialement tous les sommets nommés: 1 -> N+1
-    STAR = np.array(np.linspace(1, N+1, N, endpoint=False), dtype='int').tolist()  # linspace(START, STOP, nrbe éléments)
-    # print(STAR)
-    # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N
-    nbr = random.randint(0, N)
+    # STAR contient initialement tous les sommets nommés: 1 -> N
+    STAR = np.array(np.linspace(1, N+1, N, endpoint=False), dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
+    #print(STAR)
+    # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N-1 (le ring doit contenir min 1 elem)
+    nbr = random.randint(1, N)
     for i in range(nbr):
         # numéro du sommet à switch
         n = random.randint(0, N - i - 1)  # 0 -> (N-1) car correspond à l'indice du sommet et non à sa valeur
@@ -44,7 +44,7 @@ def initiaterandom(N):
 # cost et PEER #
 ################
 # Retourne le coût total et les arcs optimaux (PEER) pour le STAR
-def evaluate(RING, STAR, N):
+def evaluate(RING, STAR, N, Cr, Ca):
     c = 0
     PEER = []  # Contient les arcs optimaux pour STAR
     # Coût du RING
@@ -52,14 +52,16 @@ def evaluate(RING, STAR, N):
         c += Cr[RING[i] - 1][RING[i + 1] - 1]
     # MAJ de PEER et du coût
     for e in STAR:
-        cmin = Cr[e - 1][0]
+        cmin = Ca[e - 1][0]
         i_min = 0
         for i in range(N):
-            if Cr[e - 1][i] == 0:
+            if Ca[e - 1][i] == 0 and i == 0:  # dans le cas où 1 est dans le STAR
+                cmin = Ca[e-1][i+1]
+            elif Ca[e - 1][i] == 0:
                 continue
-            elif Cr[e - 1][i] < cmin:
-                cmin = Cr[e - 1][i]
-                i_min = i + 1
+            elif Ca[e - 1][i] < cmin:
+                cmin = Ca[e - 1][i]
+                i_min = i
         PEER.append([e, i_min + 1])
         c += cmin
     return c, PEER
@@ -81,7 +83,7 @@ if __name__ == '__main__':
         data = data.split()
         data = list(map(int, data))
         N = data[0]  # Nombre de sommets du problème
-        # print(N)
+        #print(N)
 
         for i in range(N):
             sommet = f.readline()
@@ -103,7 +105,7 @@ if __name__ == '__main__':
     #listeRing, listeHorsRing = initiate(N)
     listeRing, listeHorsRing = initiaterandom(N)
 
-    cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N)
+    cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N, Cr, Ca)
 
     #####################
     # Affichage et test #
@@ -115,10 +117,8 @@ if __name__ == '__main__':
     #Test des éléments
     sum = 0
     sum1 = 0
-
     for i in range(1, 52):
         sum += i  # valeur à laquelle on doit arriver
-
     for a in listeRing:
         sum1 += a
     for b in listeHorsRing:
