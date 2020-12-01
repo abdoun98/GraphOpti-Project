@@ -92,46 +92,71 @@ if __name__ == '__main__':
         return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
 
     #nous sommes au sommet "sommet" et nous voulons calculer la probabilité d'aller en chaque sommet de "element"
-    def calculer_vecteur_proba(alpha, beta, element, nonvisite, visibilite, ferom):
+    def calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, ferom):
         P=[]
         denom=0
-        for i in range(len(nonvisite)):
-            denom += ferom[i] ** alpha + visibilite[i] ** beta
-        for elmt in range(len(element)):
-            if element[elmt] in nonvisite:
-                #print(visibilite[elmt] ** beta)
+        for i in nonvisite:
+            denom += ferom[listeRingRef.index(i)] ** alpha + visibilite[listeRingRef.index(i)] ** beta
+        for elmt in range(len(listeRingRef)):
+            if listeRingRef[elmt] in nonvisite:
                 P+=[(ferom[elmt]**alpha+visibilite[elmt]**beta)/denom]
             else:
                 P+=[0]
         return P
 
-    def donneVisibilite(n,element):
+    def donneVisibilite(n,listeRingRef):
         visibilite=[]
-        for elm in range(len(element)):
+        for elm in range(len(listeRingRef)):
             if Cr[elm][n]==0:
                 visibilite +=[0]
             else:
                 visibilite += [1 / Cr[elm][n]]
         return visibilite
 
-    def fourmi(alpha,beta,listeRing):
-        n=random.randint(0,len(listeRing)-1)
-        element=copy.deepcopy(listeRing)
-        nonvisite=copy.deepcopy(listeRing)
-        ferom=np.zeros((len(listeRing),len(listeRing))).tolist()
-        listeSommet=[listeRing[n]]
-        nonvisite.remove(listeRing[n])
+    def fourmi(alpha,beta, listeRingRef, ferom):
+        n=random.randint(0,len(listeRingRef)-1)
+        nonvisite=copy.deepcopy(listeRingRef)
+        listeSommet=[listeRingRef[n]]
+        nonvisite.remove(listeRingRef[n])
         i=0
         while len(nonvisite)>0:
             i+=1
-            visibilite=donneVisibilite(n,element)
-            P=calculer_vecteur_proba(alpha, beta, element, nonvisite, visibilite, ferom[n])
-            n=random.choices(element,P,k=1)[0]
+            visibilite=donneVisibilite(n,listeRingRef)
+            P=calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, ferom[n])
+            n=random.choices(listeRingRef,P,k=1)[0]
             nonvisite.remove(n)
             listeSommet+=[n]
-            n=element.index(n)
+            n=listeRingRef.index(n)
         return listeSommet
 
+    def deposeFerom(dferom, listeRing, listeRingRef, Q, cout):
+        for i in range(len(listeRing)-1):
+            dferom[listeRingRef.index(listeRing[i])][listeRingRef.index(listeRing[i+1])]+=Q/cout
+        return dferom
+
+    def evaporerFerom(dferom, ferom, omega):
+        for i in range(len(ferom)):
+            for j in range(len(ferom)):
+                ferom[i][j]=ferom[i][j]*(1-omega)+dferom[i][j]
+        dferom=np.zeros((len(dferom), len(dferom))).tolist()
+        return ferom,dferom
+
+    def colonieFourmi(N, nbFourmis, alpha,beta,Q,omega):
+        mlisteRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
+        dferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
+        ferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
+        mcout=evalue(mlisteRing,listeHorsRing,listeLienHorsRing)
+        listeRingRef=copy.deepcopy(mlisteRing)
+        for k in range(N):
+            for f in range(nbFourmis):
+                listeRing=fourmi(alpha, beta, listeRingRef, ferom)
+                cout=evalue(listeRing,listeHorsRing,listeLienHorsRing)
+                dferom=deposeFerom(dferom,listeRing, listeRingRef, Q, cout)
+                if cout<mcout:
+                    mcout=cout
+                    mlisteRing=copy.deepcopy(listeRing)
+            ferom, dferom=evaporerFerom(dferom, ferom,omega)
+        return mlisteRing, listeHorsRing, listeLienHorsRing, mcout
 
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
@@ -157,7 +182,6 @@ if __name__ == '__main__':
 
         print(Ca[1][2])
         print("fin d'extraction des donnees")
-        listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
-        mListeRing=fourmi(0.5,0.5,listeRing)
-        print(mListeRing)
+        mlisteRing, listeHorsRing, listeLienHorsRing, mcout = colonieFourmi(1000,20,0.5,0.5,1,0.75)
+        print(mcout,mlisteRing)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
