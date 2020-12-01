@@ -28,10 +28,11 @@ def initiate(N):
 def initiaterandom(N):
     RING = [1]
     # STAR contient initialement tous les sommets nommés: 2 -> N
-    STAR = np.array(np.linspace(2, N+1, (N-1), endpoint=False), dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
-    #print(STAR)
+    STAR = np.array(np.linspace(2, N + 1, (N - 1), endpoint=False),
+                    dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
+    # print(STAR)
     # nombre d'éléments à switch entre RING et STAR, donc bien de 0 -> N-1 (le ring doit contenir min 1 elem)
-    nbr = random.randint(0, N-1)
+    nbr = random.randint(0, N - 1)
     for i in range(nbr):
         # numéro du sommet à switch
         n = random.randint(0, N - i - 2)  # 0 -> (N-2) car correspond à l'indice du sommet et non à sa valeur
@@ -56,7 +57,7 @@ def evaluate(RING, STAR, N, Cr, Ca):
         i_min = 0
         for i in range(N):
             if Ca[e - 1][i] == 0 and i == 0:  # dans le cas où 1 est dans le STAR
-                cmin = Ca[e-1][i+1]
+                cmin = Ca[e - 1][i + 1]
             elif Ca[e - 1][i] == 0:
                 continue
             elif Ca[e - 1][i] < cmin:
@@ -65,6 +66,51 @@ def evaluate(RING, STAR, N, Cr, Ca):
         PEER.append([e, i_min + 1])
         c += cmin
     return c, PEER
+
+
+##################
+# Evolutionnaire #
+##################
+class Individu:
+    def __init__(self, RING, STAR, PEER, Cost):
+        self.RING = RING
+        self.STAR = STAR
+        self.PEER = PEER
+        self.Cost = Cost
+
+
+def evolutionnaire(N, Cr, Ca):
+    T = 4  # Taille de la population
+    G = 2  # Nombre maximal de génération
+    Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
+    Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
+
+    # Initialisation
+    Population = []
+    for i in range(T):
+        RING, STAR = initiaterandom(N)
+        c, PEER = evaluate(RING, STAR, N, Cr, Ca)
+        Population.append(Individu(RING, STAR, PEER, c))
+
+    # Sélection
+    Couple = []
+    pop = [i for i in range(0, T)]
+    for i in range(int(T/2)):
+        A = random.choice(pop)
+        pop.remove(A)
+        B = random.choice(pop)
+        pop.remove(B)
+        Couple.append([Population[A], Population[B]])
+
+    #Croisement
+
+
+    # Affichage
+    for i in range(T):
+        print("Individu " + str(i + 1) + "\n" + "RING : " + str(Population[i].RING) + "\n" + "STAR : " + str(Population[i].STAR) + "\n" + "PEER : "
+              + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
+
+    return Population, Couple
 
 
 ########
@@ -83,7 +129,7 @@ if __name__ == '__main__':
         data = data.split()
         data = list(map(int, data))
         N = data[0]  # Nombre de sommets du problème
-        #print(N)
+        # print(N)
 
         for i in range(N):
             sommet = f.readline()
@@ -104,14 +150,18 @@ if __name__ == '__main__':
     ##############
     #listeRing, listeHorsRing = initiate(N)
     listeRing, listeHorsRing = initiaterandom(N)
-
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N, Cr, Ca)
+
+    pop, couple = evolutionnaire(N, Cr, Ca)
+    print(pop)
+    print(couple)
+
 
     #####################
     # Affichage et test #
     #####################
 
-    print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
+    #print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
 
     """
     #Test des éléments
