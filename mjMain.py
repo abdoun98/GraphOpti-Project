@@ -32,7 +32,6 @@ if __name__ == '__main__':
                     s = listeRing[j]
             listeLienHorsRing[i] = s
 
-
     def solutionAleatoire():
         listeHorsRing = np.array(np.linspace(0, len(Ca), len(Ca), endpoint=False), dtype='int').tolist()
         N = random.randint(0, len(Ca))
@@ -182,6 +181,6 @@ if __name__ == '__main__':
 
         print(Ca[1][2])
         print("fin d'extraction des donnees")
-        mlisteRing, listeHorsRing, listeLienHorsRing, mcout = colonieFourmi(1000,20,0.5,0.5,1,0.75)
+        mlisteRing, listeHorsRing, listeLienHorsRing, mcout = colonieFourmi(1000,200,0.5,0.5,1,0.75)
         print(mcout,mlisteRing)
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
