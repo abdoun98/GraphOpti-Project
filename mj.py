@@ -3,7 +3,7 @@ import random
 import numpy as np
 import copy
 
-
+# construit la liste "listeLienHorsRing", en associant chaque sommet hors ring au sommet du ring le plus proche
 def attributSommetRing(listeRing, listeHorsRing, listeLienHorsRing):
     for i in range(len(listeHorsRing)):
         m = math.inf
@@ -14,6 +14,7 @@ def attributSommetRing(listeRing, listeHorsRing, listeLienHorsRing):
                 s = listeRing[j]
         listeLienHorsRing[i] = s
 
+#genénère une solution aléatoire avec N sommets dans le ring
 def solutionAleatoire(N):
     listeHorsRing = np.array(np.linspace(1, len(Ca), len(Ca)-1, endpoint=False), dtype='int').tolist()
     listeRing = [0]
@@ -25,6 +26,7 @@ def solutionAleatoire(N):
     attributSommetRing(listeRing, listeHorsRing, listeLienHorsRing)
     return listeRing, listeHorsRing, listeLienHorsRing
 
+# évalue un scénario donné
 def evalue(listeRing, listeHorsRing, listeLienHorsRing):
     c=0
     for i in range(len(listeRing)):
@@ -46,21 +48,25 @@ def calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, fer
             P+=[0]
     return P
 
+#donne la visibilité de tout les sommets lors que nous sommes au sommet n
 def donneVisibilite(n,listeRingRef):
     visibilite=[]
     for elm in range(len(listeRingRef)):
+        #Si la distance est egale à 0, on mets une visibilité égale à 0
         if Cr[elm][n]==0:
             visibilite +=[0]
         else:
             visibilite += [1 / Cr[elm][n]]
     return visibilite
 
+#algorithmes pour une fourmi
 def fourmi(alpha,beta, listeRingRef, ferom):
     n=random.randint(0,len(listeRingRef)-1)
     nonvisite=copy.deepcopy(listeRingRef)
     listeSommet=[listeRingRef[n]]
     nonvisite.remove(listeRingRef[n])
     i=0
+    #tant la fourmi n'a pas visité tout les sommets
     while len(nonvisite)>0:
         i+=1
         visibilite=donneVisibilite(n,listeRingRef)
@@ -83,6 +89,12 @@ def evaporerFerom(dferom, ferom, omega):
     dferom=np.zeros((len(dferom), len(dferom))).tolist()
     return ferom,dferom
 
+'''algorithme pour une colonie de fourmis
+N: nombre de fois qu'on fait parourir le ring par les fourmis
+alpha: poids donné aux féromones pour choisir le chemin pris par une fourmi
+beta: poids donné à la visibilité pour choisir le chemin pris par une fourmi
+omega: taux (entre 0 et 1) de féromone gardée à chaque parcour du graphe
+Q: quantité (feromone*poids) de féromones déposées quand une fourmie passe sur un sommet'''
 def colonieFourmi(N, nbFourmis, alpha,beta,Q,omega, mlisteRing, listeHorsRing, listeLienHorsRing):
     dferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
     ferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
@@ -99,23 +111,46 @@ def colonieFourmi(N, nbFourmis, alpha,beta,Q,omega, mlisteRing, listeHorsRing, l
         ferom, dferom=evaporerFerom(dferom, ferom,omega)
     return mlisteRing, listeHorsRing, listeLienHorsRing, mcout
 
-def recherche(N, nbFourmis, alpha, beta, Q, omega):
+def recherche(N, nbIter, nbFourmis, alpha, beta, Q, omega):
     mcout = math.inf
     mlisteRing=[]
+    coutSelonNbSommet=[]
     for i in range(len(Ca)):
-        listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire(N)
-        listeRing = colonieFourmi(N, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing)
-        cout = evalue(listeRing, listeHorsRing, listeLienHorsRing)
-        if cout < mcout:
-            mcout = cout
-            mlisteRing = copy.deepcopy(listeRing)
+        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing=fourmiApertirDAleatoire(20,i, 20, alpha, beta, Q,
+                                                                                      omega, coutSelonNbSommet, mcout)
+    listeNbSommet = np.array(np.linspace(1, len(Ca), len(Ca) - 1, endpoint=False), dtype='int').tolist()
+    probaNbSommet=construitProbaNbSommet(coutSelonNbSommet)
+    for j in range(nbIter):
+        n = random.choices(listeNbSommet, probaNbSommet, k=1)[0]
+        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApertirDAleatoire(N, n, nbFourmis, alpha, beta, Q,
+                                                                                        omega, coutSelonNbSommet, mcout)
     return mlisteRing, listeHorsRing, listeLienHorsRing, mcout
+
+def construitProbaNbSommet(coutSelonNbSommet):
+    probaNbSommet = []
+    somme=sum(coutSelonNbSommet)
+    for i in coutSelonNbSommet:
+        probaNbSommet=[i/somme]
+    return probaNbSommet
+
+def fourmiApertirDAleatoire(N,i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout):
+    listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire(N)
+    listeRing = colonieFourmi(N, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing)
+    cout = evalue(listeRing, listeHorsRing, listeLienHorsRing)
+    coutSelonNbSommet += [cout]
+    if cout < mcout:
+        mcout = cout
+        mlisteRing = copy.deepcopy(listeRing)
+        mlisteHorsRing = copy.deepcopy(listeHorsRing)
+        mlisteLienHorsRing = copy.deepcopy(listeLienHorsRing)
+    return mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing
 
 if __name__ == '__main__':
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
 
-    with open("Datasets/data1.txt") as f:
+    #on récupère les données
+    with open("Datasets/data4.txt") as f:
         data = f.readline()
         data = data.split()
         data = list(map(int, data))
@@ -136,5 +171,5 @@ if __name__ == '__main__':
 
         print(Ca[1][2])
         print("fin d'extraction des donnees")
-        mlisteRing, listeHorsRing, listeLienHorsRing, mcout = recherche(100, 20, 0.5, 0.5, 1, 0.75)
+        mlisteRing, listeHorsRing, listeLienHorsRing, mcout = recherche(100, 100, 20, 0.5, 0.5, 1, 0.75)
         print(mcout, mlisteRing)
