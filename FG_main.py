@@ -88,7 +88,7 @@ def evolutionnaire(N, Cr, Ca):
 
     for g in range(G):  # G générations se succèdent
 
-        # Sélection
+        # Sélection des couples
         Couple = []
         pop = [i for i in range(0, T)]  # liste des indices des individus
         for i in range(int(T/2)):
@@ -101,39 +101,48 @@ def evolutionnaire(N, Cr, Ca):
         # Croisement
         Enfant = []
         for i in range(int(T/2)):
-            p1 = Couple[i][0].RING
-            p2 = Couple[i][1].RING
-            e1 = [1]  # chaque solution doit commencer par 1
-            e2 = [1]
-            if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
-                continue
-            else:
-                # enfant 1
-                e1.append(p2[-1])  # on choisit le dernier elem p2 à introduire dans e1
-                for j in range(2, len(p1)):  # on construit e1 avec les éléments de p1
-                    if e1[1] == p1[j]:  # l'élément switch ne peut pas se retrouver 2 fois dans e1
-                        continue
-                    else:
-                        e1.append(p1[j])
-                Enfant.append(e1)
-                # enfant 2
-                e2.append(p1[-1])
-                for j in range(2, len(p2)):
-                    if e2[1] == p2[j]:
-                        continue
-                    else:
-                        e2.append(p2[j])
-                Enfant.append(e2)
-            print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+            chance = random.randint(0, 1)
+            if chance > Pc:
+                continue  # il n'y a pas de reproduction
 
+            else:  # il y a reproduction (et donc croisement des caractéristiques)
+                p1 = Couple[i][0].RING
+                p2 = Couple[i][1].RING
+                e1 = [1]  # chaque solution doit commencer par 1
+                e2 = [1]
+                if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
+                    continue
+                else:
+                    # enfant 1
+                    e1.append(p2[-1])  # on choisit le dernier elem p2 à introduire dans e1
+                    for j in range(2, len(p1)):  # on construit e1 avec les éléments de p1
+                        if e1[1] == p1[j]:  # l'élément switch ne peut pas se retrouver 2 fois dans e1
+                            continue
+                        else:
+                            e1.append(p1[j])
+                    Enfant.append(e1)
+                    # enfant 2
+                    e2.append(p1[-1])
+                    for j in range(2, len(p2)):
+                        if e2[1] == p2[j]:
+                            continue
+                        else:
+                            e2.append(p2[j])
+                    Enfant.append(e2)
+                print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
 
         # Permutation
         for i in range(len(Enfant)):
-            if len(Enfant[i]) == 2:  # si Enfant est de taille 2, on ne switch pas car 1 toujours en 1ère place
-                continue
-            else:
-                n = random.randint(1, len(Enfant[i]) - 2)  # indice du somment à switch (pas 0 et pas dernier)
-                Enfant[i][n], Enfant[i][n+1] = Enfant[i][n+1], Enfant[i][n]
+            chance = random.randint(0, 1)
+            if chance > Pm:
+                continue  # il n'y a pas de mutation
+
+            else:  # il y a mutation chez l'enfant
+                if len(Enfant[i]) == 2:  # si Enfant est de taille 2, on ne permute pas car 1 toujours en 1ère place
+                    continue
+                else:
+                    n = random.randint(1, len(Enfant[i]) - 2)  # indice du somment à permuter (pas 0 et pas dernier)
+                    Enfant[i][n], Enfant[i][n+1] = Enfant[i][n+1], Enfant[i][n]
 
         # Construction des individus Enfants
         for i in range(len(Enfant)):
@@ -154,7 +163,7 @@ def evolutionnaire(N, Cr, Ca):
     #    print("Individu " + str(i + 1) + "\n" + "RING : " + str(Population[i].RING) + "\n" + "STAR : " + str(Population[i].STAR) + "\n" + "PEER : "
     #          + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
 
-    return Population, Couple
+    return Population
 
 
 ########
@@ -196,9 +205,8 @@ if __name__ == '__main__':
     listeRing, listeHorsRing = initiaterandom(N)
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N, Cr, Ca)
 
-    pop, couple = evolutionnaire(N, Cr, Ca)
+    pop = evolutionnaire(N, Cr, Ca)
     print(pop)
-    print(couple)
 
 
     #####################
