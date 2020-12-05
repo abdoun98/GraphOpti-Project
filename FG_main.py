@@ -71,6 +71,14 @@ def donneSommetRingPlusProche(RING,sommet):
             s = j
     return s
 
+def fourmisSurPopulation(Population,Cr,Ca):
+    for indv in Population:
+        listeRing, listeHorsRing, listeLienHorsRing=mj.convertionAller(indv.RING,indv.PEER)
+        mlisteRing, listeHorsRing, listeLienHorsRing, cout=mj.colonieFourmi(20,20,1,1,1,0.75,listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)
+        indv.Cost=cout
+        indv.RING=mj.conversionRetour(mlisteRing)
+    return Population
+
 ##################
 # Evolutionnaire #
 ##################
@@ -166,6 +174,7 @@ def evolutionnaire(N, Cr, Ca):
             Population.append(Individu(Enfant[i], STAR, PEER, c))  # T parents suivis de T enfants -> sélection à faire
 
         # Sélection d'individus
+        Population=fourmisSurPopulation(Population,Cr,Ca)
         Population = sorted(Population, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
         for i in range(len(Enfant)):
             Population.remove(Population[-1])  # on supprime les individus avec le score le plus élevé
