@@ -73,12 +73,15 @@ def permIntoRing(ring, star, link):
     return ring, star, link
 
 def createMovement(ring, star, link, Ca):
+    newRing = ring[:]
+    newStar = star[:]
+    newLink = link[:]
     select = random.randrange(3)
     if select == 0:
-        if len(ring) <= 2:
-            createMovement(ring, star, link, Ca)
+        if len(newRing) <= 2:
+            createMovement(newRing, newStar, newLink, Ca)
         else:
-            ring = permRing(ring)
+            newRing = permRing(newRing)
             '''
     elif select == 1:
         if len(star) <= 2:
@@ -87,17 +90,17 @@ def createMovement(ring, star, link, Ca):
             link = permStar(ring, link)
             '''
     elif select == 1:
-        if len(ring) <= 1:
-            createMovement(ring, star, link, Ca)
+        if len(newRing) <= 1:
+            createMovement(newRing, newStar, newLink, Ca)
         else:
-            ring, star, link = permOutOfRing(ring, star, link, Ca)
+            newRing, newStar, newLink = permOutOfRing(newRing, newStar, newLink, Ca)
     else:
-        if len(star) <= 0:
-            createMovement(ring,star,link, Ca)
+        if len(newStar) <= 0:
+            createMovement(newRing, newStar, newLink, Ca)
         else:
-            ring, star, link = permIntoRing(ring, star, link)
+            newRing, newStar, newLink = permIntoRing(newRing, newStar, newLink)
 
-    return ring, star, link
+    return newRing, newStar, newLink
 
 def randomSolution(nbr, Ca):
     ringRndTreshold = 0.5
@@ -138,13 +141,16 @@ def recuit(Cr, Ca):
         for i in range(nbrItr):
             newRing, newStar, newLink = createMovement(ring, star, link, Ca)
             newScore = getScore(Cr, Ca, newRing, newStar, newLink)
-            if newScore > currentScore:
+            if newScore < currentScore:
                 currentScore = newScore
                 ring = newRing
                 star = newStar
                 link = newLink
             else:
-                P = math.exp((newScore-currentScore)/t)
+                if (newScore-currentScore)/t < -20:
+                    P = 0
+                else:
+                    P = math.exp((currentScore-newScore)/t)
                 if P >=random.random():
                     currentScore = newScore
                     ring = newRing
