@@ -32,6 +32,10 @@ if __name__ == '__main__':
         print(Ca[1][2])
         print("fin d'extraction des donnees")
 
+    with open("outputC", 'w') as f:
+        for x in Ca:
+            f.write(x + '\n')
+
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
 
