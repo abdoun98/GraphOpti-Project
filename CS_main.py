@@ -118,9 +118,9 @@ def randomSolution(nbr, Ca):
     star = listOfPoint
     link = []
     for elem in star:
-        print(ring)
-        print(Ca[elem-1])
-        print([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
+        #print(ring)
+        #print(Ca[elem-1])
+        #print([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
         minimum = min([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
         minPos = Ca[elem-1].index(minimum) + 1
         link.append(minPos)
@@ -128,13 +128,13 @@ def randomSolution(nbr, Ca):
 
 
 def recuit(Cr, Ca):
-    nbrItr = 100
+    nbrItr = 100000
 
     size = len(Cr[0])
     ring, star, link = randomSolution(size, Ca)
-    t = 10000
-    tf = 0.0001
-    N = 0.99
+    t = 1000000
+    tf = 1
+    N = 0.9
     currentScore = getScore(Cr, Ca, ring, star, link)
 
     while t > tf:
@@ -156,7 +156,8 @@ def recuit(Cr, Ca):
                     ring = newRing
                     star = newStar
                     link = newLink
-            print(ring, star, link, currentScore, t)
+
+        print(ring, star, link, currentScore, t)
         if t > tf:
             t = t * N
     return ring, star, link
@@ -166,7 +167,7 @@ if __name__ == '__main__':
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
 
-    with open("Datasets/test.txt") as f:
+    with open("Datasets/data1.txt") as f:
         data = f.readline()
         data = data.split()
         data = list(map(int, data))
