@@ -161,10 +161,12 @@ def evolutionnaire(N, Cr, Ca):
             Population.remove(Population[-1])  # on supprime les individus avec le score le plus élevé
 
     # Affichage
-    #for i in range(T):
-    #    print("Individu " + str(i + 1) + "\n" + "RING : " + str(Population[i].RING) + "\n" + "STAR : " + str(Population[i].STAR) + "\n" + "PEER : "
-    #          + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
-
+    #"""
+    print("\n" + "Individus sélectionnés")
+    for i in range(T):
+        print("Individu " + str(i + 1) + "\n" + "RING : " + str(Population[i].RING) + "\n" + "STAR : " + str(Population[i].STAR) + "\n" + "PEER : "
+              + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
+    #"""
     return Population
 
 
