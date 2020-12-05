@@ -34,7 +34,9 @@ if __name__ == '__main__':
 
     with open("outputC", 'w') as f:
         for x in Ca:
-            f.write(x + '\n')
+            f.write(str(x) + "\n")
+
+    print("asa")
 
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
