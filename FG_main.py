@@ -1,6 +1,7 @@
 import random
 import numpy as np
-
+import mj
+import math
 
 ################
 # RING et STAR #
@@ -49,17 +50,26 @@ def evaluate(RING, STAR, N, Cr, Ca):
     #print("cout initial : ", c)
     PEER = []  # Contient les arcs optimaux pour STAR
     # Coût du RING
-    for i in range(len(RING) - 1):
-        c += Cr[RING[i] - 1][RING[i + 1] - 1]
+    for i in range(len(RING)):
+        c += Cr[RING[i-1] - 1][RING[i] - 1]
         #print("update cout r ({}) : {}".format(i, c))
     # MAJ de PEER et du coût
     for i in range(len(STAR) - 1):
-        temp = random.choice(RING)
+        temp = donneSommetRingPlusProche(RING, STAR[i])
         PEER.append([STAR[i], temp])
         c += Ca[STAR[i]][temp - 1]
         #print("update cout hr ({}) : {}".format(i, c))
     return c, PEER
 
+#Associe "sommet" qui est hors ring au sommet du ring le plus proche
+def donneSommetRingPlusProche(RING,sommet):
+    m = math.inf
+    s = -1
+    for j in RING:
+        if m > Ca[sommet-1][j-1]:
+            m = Ca[sommet-1][j-1]
+            s = j
+    return s
 
 ##################
 # Evolutionnaire #
@@ -140,7 +150,7 @@ def evolutionnaire(N, Cr, Ca):
                 continue  # il n'y a pas de mutation
 
             else:  # il y a mutation chez l'enfant
-                if len(Enfant[i]) == 2:  # si Enfant est de taille 2, on ne permute pas car 1 toujours en 1ère place
+                if len(Enfant[i]) < 3:  # si Enfant est de taille 2, on ne permute pas car 1 toujours en 1ère place
                     continue
                 else:
                     n = random.randint(1, len(Enfant[i]) - 2)  # indice du somment à permuter (pas 0 et pas dernier)

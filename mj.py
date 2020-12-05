@@ -161,7 +161,7 @@ if __name__ == '__main__':
     Ca = []  # cout des liens vers ring
 
     #on récupère les données
-    with open("Datasets/data4.txt") as f:
+    with open("Datasets/data1.txt") as f:
         data = f.readline()
         data = data.split()
         data = list(map(int, data))
