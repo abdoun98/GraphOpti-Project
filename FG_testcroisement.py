@@ -72,40 +72,33 @@ class Individu:
         self.Cost = Cost
 
 
-def croisement1(T, Pc, Couple):
+def croisement1(p1, p2):
     enfants = []
-    for i in range(int(T / 2)):
-        chance = random.random()  # chance in [0,1] car pas sûr de croiser
-        if chance > Pc:
-            print("Pas croisement" + "\n")
-            continue  # il n'y a pas de reproduction
+    e1, e2 = [1]  # chaque solution doit commencer par 1
+    # enfant 1
+    e1.append(p2[-1])  # on choisit le dernier elem p2 à introduire dans e1
+    for j in range(2, len(p1)):  # on construit e1 avec les éléments de p1
+        if e1[1] == p1[j]:  # l'élément switch ne peut pas se retrouver 2 fois dans e1
+            continue
+        else:
+            e1.append(p1[j])
+    enfants.append(e1)
+    # enfant 2
+    e2.append(p1[-1])
+    for j in range(2, len(p2)):
+        if e2[1] == p2[j]:
+            continue
+        else:
+            e2.append(p2[j])
+    enfants.append(e2)
+    print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+    return enfants
 
-        else:  # il y a reproduction (et donc croisement des caractéristiques)
-            p1 = Couple[i][0].RING
-            p2 = Couple[i][1].RING
-            e1 = [1]  # chaque solution doit commencer par 1
-            e2 = [1]
-            if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
-                continue
-            else:
-                # enfant 1
-                e1.append(p2[-1])  # on choisit le dernier elem p2 à introduire dans e1
-                for j in range(2, len(p1)):  # on construit e1 avec les éléments de p1
-                    if e1[1] == p1[j]:  # l'élément switch ne peut pas se retrouver 2 fois dans e1
-                        continue
-                    else:
-                        e1.append(p1[j])
-                enfants.append(e1)
-                # enfant 2
-                e2.append(p1[-1])
-                for j in range(2, len(p2)):
-                    if e2[1] == p2[j]:
-                        continue
-                    else:
-                        e2.append(p2[j])
-                enfants.append(e2)
-            print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(
-                e2) + "\n")
+
+def croisement2(p1, p2):
+    enfants = []
+    e1, e2 = [1]
+
     return enfants
 
 
@@ -136,7 +129,20 @@ def evolutionnaire(N, Cr, Ca):
             Couple.append([Population[A], Population[B]])
 
         # Croisement
-        Enfant = croisement1(T, Pc, Couple)
+        Enfant = []
+        for i in range(int(T / 2)):
+            chance = random.random()  # chance in [0,1] car pas sûr de croiser
+            if chance > Pc:
+                print("Pas croisement" + "\n")
+                continue  # il n'y a pas de reproduction
+
+            else:  # il y a reproduction (et donc croisement des caractéristiques)
+                p1 = Couple[i][0].RING
+                p2 = Couple[i][1].RING
+                if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
+                    continue  # équivalent à continue si on était dans la loop
+                else:
+                    Enfant.append(croisement1(p1, p2))
 
         # Permutation
         for i in range(len(Enfant)):
@@ -145,7 +151,7 @@ def evolutionnaire(N, Cr, Ca):
                 continue  # il n'y a pas de mutation
 
             else:  # il y a mutation chez l'enfant
-                if len(Enfant[i]) == 2:  # si Enfant est de taille 2, on ne permute pas car 1 toujours en 1ère place
+                if len(Enfant[i]) < 3:  # si Enfant est de taille 2, on ne permute pas car 1 toujours en 1ère place
                     continue
                 else:
                     n = random.randint(1, len(Enfant[i]) - 2)  # indice du somment à permuter (pas 0 et pas dernier)
