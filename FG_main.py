@@ -1,4 +1,3 @@
-import math
 import random
 import numpy as np
 
@@ -87,6 +86,7 @@ def evolutionnaire(N, Cr, Ca):
         Population.append(Individu(RING, STAR, PEER, c))
 
     for g in range(G):  # G générations se succèdent
+        print("\n" + "Generation : " + str(g))
 
         # Sélection des couples
         Couple = []
@@ -98,11 +98,13 @@ def evolutionnaire(N, Cr, Ca):
             pop.remove(B)
             Couple.append([Population[A], Population[B]])
 
+
         # Croisement
         Enfant = []
         for i in range(int(T/2)):
-            chance = random.randint(0, 1)
+            chance = random.random()  # chance in [0,1] car pas sûr de croiser
             if chance > Pc:
+                print("Pas croisement" + "\n")
                 continue  # il n'y a pas de reproduction
 
             else:  # il y a reproduction (et donc croisement des caractéristiques)
@@ -133,7 +135,7 @@ def evolutionnaire(N, Cr, Ca):
 
         # Permutation
         for i in range(len(Enfant)):
-            chance = random.randint(0, 1)
+            chance = random.random()
             if chance > Pm:
                 continue  # il n'y a pas de mutation
 
@@ -155,7 +157,7 @@ def evolutionnaire(N, Cr, Ca):
 
         # Sélection d'individus
         Population = sorted(Population, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
-        for i in range(T):
+        for i in range(len(Enfant)):
             Population.remove(Population[-1])  # on supprime les individus avec le score le plus élevé
 
     # Affichage
@@ -205,8 +207,8 @@ if __name__ == '__main__':
     listeRing, listeHorsRing = initiaterandom(N)
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N, Cr, Ca)
 
-    pop = evolutionnaire(N, Cr, Ca)
-    print(pop)
+    population = evolutionnaire(N, Cr, Ca)
+    print(population)
 
 
     #####################
