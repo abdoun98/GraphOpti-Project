@@ -126,7 +126,19 @@ def randomSolution(nbr, Ca):
         link.append(minPos)
     return ring, star, link
 
+#Prérecuit appelé dans recuit2()
+def preRecuit2(Ca, ring):
+    nbr = len(Ca[0])
+    star = list(range(1, nbr + 1))
+    link = []
 
+    for point in ring:
+        star.remove(point)
+    for point in star:
+        minimum = min([j for i, j in enumerate(Ca[point - 1]) if i + 1 in ring])
+        minPos = Ca[point - 1].index(minimum) + 1
+        link.append(minPos)
+    return ring, star, link
 
 def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
     nbrItr = 100000
@@ -168,7 +180,44 @@ def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
             t = t * N
     return ring, star, link
 
+#Recuit simulé adapté à l'algo évolutionnaire
+def recuit2(Cr, Ca, ring):
+    nbrItr = 100
 
+    t = 1000000
+    tf = 1
+    N = 0.9
+
+    # fonction qui va générer le star et le link en fonction du ring passé en paramètre
+    ring, star, link = preRecuit2(Ca, ring)
+    currentScore = getScore(Cr, Ca, ring, star, link)
+
+    while t > tf:
+        for i in range(nbrItr):
+            newRing, newStar, newLink = createMovement(ring, star, link, Ca)
+            newScore = getScore(Cr, Ca, newRing, newStar, newLink)
+            if newScore < currentScore:
+                currentScore = newScore
+                ring = newRing
+                star = newStar
+                link = newLink
+            else:
+                if (newScore-currentScore)/t < -20:
+                    P = 0
+                else:
+                    P = math.exp((currentScore-newScore)/t)
+                if P >=random.random():
+                    currentScore = newScore
+                    ring = newRing
+                    star = newStar
+                    link = newLink
+
+        #print(ring, star, link, currentScore, t)
+        if t > tf:
+            t = t * N
+    return ring
+
+"""
 if __name__ == '__main__':
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
@@ -202,5 +251,6 @@ if __name__ == '__main__':
     print("LINK =")
     for i, j in enumerate(link):
         print([star[i], j])
-
-    print("SCORE = {}".format(getScore(Cr,Ca,ring,star, link)))
+        
+    #print("SCORE = {}".format(getScore(Cr,Ca,ring,star, link)))
+"""

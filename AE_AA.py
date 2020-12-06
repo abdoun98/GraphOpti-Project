@@ -1,6 +1,7 @@
 import random
 import numpy as np
-
+from CS_main import *
+from main import *
 
 ################
 # RING et STAR #
@@ -44,6 +45,7 @@ def initiaterandom(N):
 # cost et PEER #
 ################
 # Retourne le coût total et les arcs optimaux (PEER) pour le STAR
+"""
 def evaluate(RING, STAR, N, Cr, Ca):
     c = Cr[0][RING[-1] - 1]
     # print("cout initial : ", c)
@@ -58,6 +60,27 @@ def evaluate(RING, STAR, N, Cr, Ca):
         PEER.append([STAR[i], temp])
         c += Ca[STAR[i]][temp - 1]
         # print("update cout hr ({}) : {}".format(i, c))
+    return c, PEER
+"""
+def evaluate(RING, STAR, Cr, Ca):
+    c = Cr[0][RING[-1] - 1]  # lien entre dernier elem de RING et 1
+    # print("cout initial : ", c)
+    PEER = []  # Contient les arcs optimaux pour STAR
+    # Coût du RING
+    for i in range(len(RING) - 1):
+        c += Cr[RING[i] - 1][RING[i + 1] - 1]
+        #print("update cout r ({}) : {}".format(i, c))
+    # MAJ de PEER et du coût
+    for e in STAR:
+        cmin = Ca[e - 1][0]  # par défaut, pointe vers 1 qui est de toute façon dans le RING
+        r_min = RING[0]  # pareil
+        for r in RING:
+            if Ca[e - 1][r - 1] < cmin:
+                cmin = Ca[e - 1][r - 1]
+                r_min = r
+        PEER.append([e, r_min])
+        c += cmin
+        #print("update cout hr ({}) : {}".format(i, c))
     return c, PEER
 
 
@@ -142,7 +165,7 @@ def mutation2(Pm, Enfant):
                 Enfant[i][int(taille/2):len(Enfant[i])-int(taille/2)] = temp
     return Enfant
 
-def mutation3(Pm, Enfant):
+def mutation3(Pm, Enfant, Cr, Ca):
     for i in range(len(Enfant)):
         chance = random.random()
         if chance > Pm:
@@ -151,8 +174,7 @@ def mutation3(Pm, Enfant):
             if len(Enfant[i]) < 2:
                 continue
             else:
-                print("recuit simulé")
-                Enfant[i] = recuit(Enfant[i])
+                Enfant[i] = recuit2(Cr, Ca, Enfant[i])
     return Enfant
 
 
@@ -187,7 +209,9 @@ def evolutionnaire(N, Cr, Ca):
         Enfant = croisement1(T, Pc, Couple)
 
         # Permutation
-        Enfant = mutation1(Pm, Enfant)
+        Enfant = mutation1(Pm, Enfant)          #mutation par permutation
+        #Enfant = mutation2(Pm, Enfant)         #mutation par inversion
+        #Enfant = mutation3(Pm, Enfant, Cr, Ca) #mutation par recuit simulé
 
         # Construction des individus Enfants
         for i in range(len(Enfant)):
@@ -222,63 +246,30 @@ if __name__ == '__main__':
     #######################
     # Lecture des données #
     #######################
-    with open("Datasets/data1.txt") as f:
-        Cr = []  # cout du ring
-        Ca = []  # cout des liens vers ring
-
-        data = f.readline()
-        data = data.split()
-        data = list(map(int, data))
-        N = data[0]  # Nombre de sommets du problème
-        # print(N)
-
-        for i in range(N):
-            sommet = f.readline()
-            sommet = sommet.split()
-            sommet = list(map(int, sommet))
-            Cr.append(sommet)
-
-        for j in range(N):
-            sommet2 = f.readline()
-            sommet2 = sommet2.split()
-            sommet2 = list(map(int, sommet2))
-            Ca.append(sommet2)
-
-        # print("fin d'extraction des donnees")
+    file = "data1"
+    N, Ca, Cr = dataExtract(file)
 
     ##############
     # Résolution #
     ##############
-    # listeRing, listeHorsRing = initiate(N)
     """
+    #listeRing, listeHorsRing = initiate(N)
     listeRing, listeHorsRing = initiaterandom(N)
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, N, Cr, Ca)
-
+    
     population = evolutionnaire(N, Cr, Ca)
     print(population)
     """
-    b = [[7,4,8,9,3,5,1],[8,5,4,9,6,1,2],[9,5,8,2,3,6,4],[6,2,4,3,1,7,8],[3,2,4,6,5,1,9]]
+    b = [[1,4,8,9,3,5,6],[1,5,4,9,7,6,2],[1,5,8,2,3,6,4],[1,2,4,3,5,7,8],[1,2,4,6,5,3,9]]
     print("avant :\n", b)
-    Pm = random.uniform(0.05, 0.1)
-    c = mutation2(Pm, b)
-    print("\naprès :\n", b)
+    #Pm = random.uniform(0.05, 0.1)
+    Pm = random.random()
+    #c = mutation2(Pm, b)
+    c = mutation3(Pm, b, Cr, Ca)
+    print("\naprès :\n", c)
     print("fin")
-    #####################
-    # Affichage et test #
-    #####################
-
-    # print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
 
     """
-    #Test des éléments
-    sum = 0
-    sum1 = 0
-    for i in range(1, 52):
-        sum += i  # valeur à laquelle on doit arriver
-    for a in listeRing:
-        sum1 += a
-    for b in listeHorsRing:
-        sum1 += b
-    print(sum, sum1)
-    print("end")
-    #"""
+    t = [1, 7, 4, 8, 9, 3, 5]
+    ring = recuit2(Cr, Ca, t)
+    """
