@@ -51,7 +51,7 @@ def evaluate(RING, STAR, Cr, Ca):
     # Coût du RING
     for i in range(len(RING) - 1):
         c += Cr[RING[i] - 1][RING[i + 1] - 1]
-        #print("update cout r ({}) : {}".format(i, c))
+        # print("update cout r ({}) : {}".format(i, c))
     # MAJ de PEER et du coût
     for e in STAR:
         cmin = Ca[e - 1][0]  # par défaut, pointe vers 1 qui est de toute façon dans le RING
@@ -62,21 +62,14 @@ def evaluate(RING, STAR, Cr, Ca):
                 r_min = r
         PEER.append([e, r_min])
         c += cmin
-        #print("update cout hr ({}) : {}".format(i, c))
+        # print("update cout hr ({}) : {}".format(i, c))
     return c, PEER
 
 
-##################
-# Evolutionnaire #
-##################
-class Individu:
-    def __init__(self, RING, STAR, PEER, Cost):
-        self.RING = RING
-        self.STAR = STAR
-        self.PEER = PEER
-        self.Cost = Cost
-
-
+##############
+# Croisement #
+##############
+# Pas ouf, à ne pas utiliser
 def croisement_base(p1, p2):
     enfants = []
     e1 = [1]
@@ -97,17 +90,18 @@ def croisement_base(p1, p2):
         else:
             e2.append(p2[j])
     enfants.append(e2)
-    #print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+    # print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
     return enfants
 
 
+# On commence à remplir e1 par p1 puis par p2
 def croisement_1pt(p1, p2):
     enfants = []
     e1 = [1]
     e2 = [1]
     # enfant1
     n1 = random.randint(1, len(p1))
-    for i in range (1, n1):
+    for i in range(1, n1):
         e1.append(p1[i])
     if n1 < len(p2):  # si on a complètement rempli e1 par p1, on passe à e2
         for i in range(n1, len(p2)):  # si n1 == len(p2), il ne se passe rien
@@ -118,7 +112,7 @@ def croisement_1pt(p1, p2):
     enfants.append(e1)
     # enfant2
     n2 = random.randint(1, len(p2))
-    for i in range (1, n2):
+    for i in range(1, n2):
         e2.append(p2[i])
     if n2 < len(p1):
         for i in range(n2, len(p1)):
@@ -127,11 +121,12 @@ def croisement_1pt(p1, p2):
             else:
                 e2.append(p1[i])
     enfants.append(e2)
-    #print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+    # print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
     return enfants
 
 
-def croisement_2pts(p1, p2):
+# On remplit e1 par p1, puis par p2 et on finit par p1
+def croisement_2pt(p1, p2):
     enfants = []
     e1 = [1]
     e2 = [1]
@@ -166,18 +161,62 @@ def croisement_2pts(p1, p2):
         for i in range(n22, len(p2)):
             e2.append(p2[i])
     enfants.append(e2)
-    #print(n11, n12)
-    #print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+    # print(n11, n12)
+    # print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
     return enfants
 
 
+# on choisit aléatoirement pour chaque sommet si l'enfant hérite de p1 ou p2
+def croisement_uniforme(p1, p2):
+    enfants = []
+    e1 = [1]
+    e2 = [1]
+    # enfant1
+    # e1 aura la taille de p1
+    for i in range(1, min(len(p1), len(p2))):
+        choix = bool(random.getrandbits(1))  # return True or False
+        if choix:
+            e1.append(p1[i])
+        else:
+            e1.append(p2[i])
+    if len(p1) > len(p2):
+        for i in range(len(p2), len(p1)):
+            e1.append(p1[i])
+    enfants.append(e1)
+    # enfant2
+    # e2 aura la taille de p2
+    for i in range(1, min(len(p1), len(p2))):
+        choix = bool(random.getrandbits(1))  # return True or False
+        if choix:
+            e2.append(p2[i])
+        else:
+            e2.append(p2[i])
+    if len(p2) > len(p1):
+        for i in range(len(p1), len(p2)):
+            e2.append(p2[i])
+    enfants.append(e2)
+    # print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+    return enfants
+
+
+##################
+# Evolutionnaire #
+##################
+class Individu:
+    def __init__(self, RING, STAR, PEER, Cost):
+        self.RING = RING
+        self.STAR = STAR
+        self.PEER = PEER
+        self.Cost = Cost
+
+
 def evolutionnaire(N, Cr, Ca):
-    T = 400  # Taille de la population
-    G = 50  # Nombre maximal de génération
-    #Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
-    #Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
-    Pc = 0.7
-    Pm = 0.07
+    T = 800  # Taille de la population
+    G = 100  # Nombre maximal de génération
+    # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
+    # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
+    Pc = 0.8
+    Pm = 0.1
 
     # Initialisation
     Population = []
@@ -204,7 +243,7 @@ def evolutionnaire(N, Cr, Ca):
         for i in range(int(T / 2)):
             chance = random.random()  # chance in [0,1] car pas sûr de croiser
             if chance > Pc:
-                #print("Pas croisement" + "\n")
+                # print("Pas croisement" + "\n")
                 continue  # il n'y a pas de reproduction
 
             else:  # il y a reproduction (et donc croisement des caractéristiques)
@@ -254,7 +293,6 @@ def evolutionnaire(N, Cr, Ca):
               + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
     # """
 
-
     return Population
 
 
@@ -298,16 +336,16 @@ if __name__ == '__main__':
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, Cr, Ca)
 
     population = evolutionnaire(N, Cr, Ca)
-    #print(population)
+    # print(population)
 
     #####################
     # Affichage et test #
     #####################
-    """
-    print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
 
-    
-    #Test des éléments
+    # print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
+
+    # """
+    # Test des éléments
     sum = 0
     sum1 = 0
     for i in range(1, 52):
@@ -319,4 +357,4 @@ if __name__ == '__main__':
     print(sum, sum1)
 
     print("end")
-    #"""
+    # """
