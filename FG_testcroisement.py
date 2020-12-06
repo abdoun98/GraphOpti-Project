@@ -77,7 +77,7 @@ class Individu:
         self.Cost = Cost
 
 
-def croisement1(p1, p2):
+def croisement_base(p1, p2):
     enfants = []
     e1 = [1]
     e2 = [1]  # chaque solution doit commencer par 1
@@ -101,19 +101,83 @@ def croisement1(p1, p2):
     return enfants
 
 
-def croisement2(p1, p2):
+def croisement_1pt(p1, p2):
     enfants = []
-    e1, e2 = [1]
+    e1 = [1]
+    e2 = [1]
+    # enfant1
+    n1 = random.randint(1, len(p1))
+    for i in range (1, n1):
+        e1.append(p1[i])
+    if n1 < len(p2):  # si on a complètement rempli e1 par p1, on passe à e2
+        for i in range(n1, len(p2)):  # si n1 == len(p2), il ne se passe rien
+            if p2[i] in e1:
+                continue
+            else:
+                e1.append(p2[i])
+    enfants.append(e1)
+    # enfant2
+    n2 = random.randint(1, len(p2))
+    for i in range (1, n2):
+        e2.append(p2[i])
+    if n2 < len(p1):
+        for i in range(n2, len(p1)):
+            if p1[i] in e2:
+                continue
+            else:
+                e2.append(p1[i])
+    enfants.append(e2)
+    #print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
+    return enfants
 
+
+def croisement_2pts(p1, p2):
+    enfants = []
+    e1 = [1]
+    e2 = [1]
+    # enfant1
+    n11 = random.randint(1, min(len(p1), len(p2)) - 1)
+    # on coupe avant à la fin du plus petit parent pour être sûr d'avoir un mélange génétique (sinon pas d'intérêt de croiser)
+    n12 = random.randint(n11, min(len(p1), len(p2)))
+    # si n12 - n11 == 1, c'est l'équivalent du croisement_1pt sur le dernier indice
+    # et la dernière boucle for doit être ignorée
+    for i in range(1, n11):
+        e1.append(p1[i])
+    for i in range(n11, n12):
+        if p2[i] in e1:
+            continue
+        else:
+            e1.append(p2[i])
+    if n12 < len(p1):
+        for i in range(n12, len(p1)):
+            e1.append(p1[i])
+    enfants.append(e1)
+    # enfant2
+    n21 = random.randint(1, min(len(p1), len(p2)) - 1)
+    n22 = random.randint(n11, min(len(p1), len(p2)))
+    for i in range(1, n11):
+        e2.append(p2[i])
+    for i in range(n21, n22):
+        if p1[i] in e2:
+            continue
+        else:
+            e1.append(p1[i])
+    if n22 < len(p2):
+        for i in range(n22, len(p2)):
+            e2.append(p2[i])
+    enfants.append(e2)
+    #print(n11, n12)
+    #print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
     return enfants
 
 
 def evolutionnaire(N, Cr, Ca):
-    T = 50  # Taille de la population
-    G = 100  # Nombre maximal de génération
-    Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
+    T = 400  # Taille de la population
+    G = 50  # Nombre maximal de génération
+    #Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
     #Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
-    Pm = 0.1
+    Pc = 0.7
+    Pm = 0.07
 
     # Initialisation
     Population = []
@@ -149,7 +213,7 @@ def evolutionnaire(N, Cr, Ca):
                 if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
                     continue  # équivalent à continue si on était dans la loop
                 else:
-                    e1, e2 = croisement1(p1, p2)
+                    e1, e2 = croisement_1pt(p1, p2)
                     Enfant.append(e1)
                     Enfant.append(e2)
 
@@ -180,6 +244,7 @@ def evolutionnaire(N, Cr, Ca):
         for i in range(len(Enfant)):
             Population.remove(Population[-1])  # on supprime les individus avec le score le plus élevé
 
+        print("best = " + str(Population[0].Cost))
     # Affichage
     """
     print("\n" + "Individus sélectionnés")
@@ -189,7 +254,7 @@ def evolutionnaire(N, Cr, Ca):
               + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
     # """
 
-    print("best = " + str(Population[0].Cost))
+
     return Population
 
 
@@ -238,7 +303,7 @@ if __name__ == '__main__':
     #####################
     # Affichage et test #
     #####################
-    #"""
+    """
     print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
 
     
