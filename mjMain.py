@@ -157,8 +157,8 @@ if __name__ == '__main__':
             ferom, dferom=evaporerFerom(dferom, ferom,omega)
         return mlisteRing, listeHorsRing, listeLienHorsRing, mcout
 
-    Cr = []  # cout du ring
-    Ca = []  # cout des liens vers ring
+    Cr = []  # cout du newRing
+    Ca = []  # cout des liens vers newRing
 
     with open("Datasets/data1.txt") as f:
         data = f.readline()

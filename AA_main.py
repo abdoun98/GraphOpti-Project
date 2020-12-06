@@ -2,8 +2,8 @@ import random
 import numpy as np
 
 def data_extract(file):
-    Cr = []  # cout du ring
-    Ca = []  # cout des liens vers ring
+    Cr = []  # cout du newRing
+    Ca = []  # cout des liens vers newRing
 
     with open("Datasets/" + file + ".txt") as f:
         data = f.readline()
