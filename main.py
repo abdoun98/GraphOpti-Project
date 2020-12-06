@@ -37,7 +37,7 @@ def writeOutput(file, listRing, listHorsRing, cout):
         for elem in listHorsRing:
             f.write("\n{} {}".format(elem[0], elem[1]))
         f.write("\nCOST {}".format(cout))
-
+"""
 if __name__ == '__main__':
 
     file = "data1"
@@ -47,7 +47,7 @@ if __name__ == '__main__':
 
     writeOutput(file, a, b, c)
     print("fin")
-
+"""
 # See PyCharm help at https://www.jetbrains.com/help/pycharm/
 
 
