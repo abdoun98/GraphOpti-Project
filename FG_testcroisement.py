@@ -170,10 +170,10 @@ def evolutionnaire(N, Cr, Ca):
         for i in range(len(Enfant)):
             STAR = []
             for j in range(2, N + 1):
-                if j not in Enfant[i]:  # possibilité d'être plus opti à voir plus tard
+                if j not in Enfant[i]:
                     STAR.append(j)
             c, PEER = evaluate(Enfant[i], STAR, Cr, Ca)
-            Population.append(Individu(Enfant[i], STAR, PEER, c))  # T parents suivis de T enfants -> sélection à faire
+            Population.append(Individu(Enfant[i], STAR, PEER, c))  # parents + enfants > T -> sélection à faire
 
         # Sélection d'individus
         Population = sorted(Population, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
