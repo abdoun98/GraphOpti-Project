@@ -40,6 +40,24 @@ def initiaterandom(N):
     return RING, STAR
 
 
+#Initialise des individus de grande taille
+#L'algo evolutionnaire ne trouve pas de bonne valeur quand le RING est grand, d'où cette fct
+def initiate_GT(N, L):
+    RING = [1]
+    # STAR contient initialement tous les sommets nommés: 2 -> N
+    STAR = np.array(np.linspace(2, N + 1, (N - 1), endpoint=False),
+                    dtype='int').tolist()  # linspace(START, STOP (on ne prend pas cette valeur), nrbe éléments)
+    # print(STAR)
+    # nombre d'éléments à switch entre STAR et RING, donc bien de 0 -> N-1 (le ring doit contenir min 1 elem)
+    nbr = random.randint(L, N - 1)
+    for i in range(nbr):
+        # numéro du sommet à switch
+        n = random.randint(0, N - i - 2)  # 0 -> (N-2) car correspond à l'indice du sommet et non à sa valeur
+        RING.append(STAR[n])
+        STAR.remove(STAR[n])
+    return RING, STAR
+
+
 ################
 # cost et PEER #
 ################
@@ -216,7 +234,12 @@ def evolutionnaire(N, Cr, Ca):
     # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
     # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
     Pc = 0.8
-    Pm = 0.1
+    Pm = 0.5
+    L = int(N * 0.75)  # Taille de RING min pour les individus de grande taille
+    if L == N:
+        L -= 1  # pour les fct initiate
+    NL = int(T * 0.7)  # Nombre d'individus de GT à ajouter
+    best = []  # Tableau du meilleur individu pour chaque génération
 
     # Initialisation
     Population = []
@@ -280,10 +303,23 @@ def evolutionnaire(N, Cr, Ca):
 
         # Sélection d'individus
         Population = sorted(Population, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
-        for i in range(len(Enfant)):
-            Population.remove(Population[-1])  # on supprime les individus avec le score le plus élevé
+        Population = Population[:T]  # on ne garde que les individus avec le plus faible score
+        print(len(Population))
 
         print("best = " + str(Population[0].Cost))
+
+        #"""
+        # Ajout d'individus de grande taille
+        best.append(Population[0].Cost)
+        if g > 10:  # on fait minimum 10 itérations
+            if (best[g-2]/best[g]) < 1.01:  # moins de 1% d'amélioration entre 3 générations
+                for l in range(NL):  # on rajoute NL individus de taille L min
+                    RING, STAR = initiate_GT(N, L)
+                    c, PEER = evaluate(RING, STAR, Cr, Ca)
+                    Population.append(Individu(RING, STAR, PEER, c))
+        print(len(Population))
+        #"""
+
     # Affichage
     """
     print("\n" + "Individus sélectionnés")
@@ -332,19 +368,19 @@ if __name__ == '__main__':
     # Résolution #
     ##############
     # listeRing, listeHorsRing = initiate(N)
-    listeRing, listeHorsRing = initiaterandom(N)
+    listeRing, listeHorsRing = initiate_GT(N, 40)
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, Cr, Ca)
 
     population = evolutionnaire(N, Cr, Ca)
-    # print(population)
+    #print(len(population))
 
     #####################
     # Affichage et test #
     #####################
 
-    # print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
+    #print("RING : " + str(listeRing) + "\n" + "STAR : " + str(listeHorsRing) + "\n" + "PEER : " + str(listeLienHorsRing) + "\n" + "Cost : " + str(cost))
 
-    # """
+    """
     # Test des éléments
     sum = 0
     sum1 = 0
