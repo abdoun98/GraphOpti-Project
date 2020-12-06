@@ -138,13 +138,13 @@ def construitProbaNbSommet(coutSelonNbSommet):
 
 #Dans tout le code nous travaillons avec des sommets dont le premier est le numéro 0, or dans l'énoncé le premier
 #sommet est le 1. Nous décalons donc tout nos sommets afin de respecter l'énoncé.
-def convertionDeFin(mlisteRing, listeHorsRing, listeLienHorsRing):
+def conversionDeFin(mlisteRing, listeHorsRing, listeLienHorsRing):
     mlisteRing = (np.array(mlisteRing) + np.ones((1, len(mlisteRing)))).toliste
     listeHorsRing = np.array(listeHorsRing) + np.ones((1, len(listeHorsRing)))
     listeLienHorsRing = np.array(listeLienHorsRing) + np.ones((1, len(listeLienHorsRing)))
     return mlisteRing, listeHorsRing, listeLienHorsRing
 
-def convertionAller(RING,PEER):
+def conversionAller(RING,PEER):
     listeHorsRing=[]
     listeLienHorsRing=[]
     listeRing=(np.array(RING)-np.ones((1, len(RING)))).tolist()[0]
@@ -154,7 +154,9 @@ def convertionAller(RING,PEER):
     return listeRing, listeHorsRing, listeLienHorsRing
 
 def conversionRetour(listeRing, listeHorsRing=[], listeLienHorsRing=[]):
-    RING = np.array(listeRing) + np.ones((1, len(listeRing))).tolist()
+    RING = np.array(listeRing) + np.ones((1, len(listeRing)))
+    RING=np.array(RING.tolist(), dtype='int').tolist()[0]
+    RING=RING[RING.index(1.):len(RING)]+RING[:RING.index(1)]
     '''PEER=[]
     STAR=listeHorsRing
     for i in range(listeLienHorsRing):
@@ -163,7 +165,7 @@ def conversionRetour(listeRing, listeHorsRing=[], listeLienHorsRing=[]):
 
 def fourmiApertirDAleatoire(nbParcour,i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout,mlisteRing, mlisteHorsRing, mlisteLienHorsRing):
     listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire(i)
-    listeRing = colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing)[0]
+    listeRing = colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)[0]
     cout = evalue(listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)
     coutSelonNbSommet += [cout]
     if cout < mcout:

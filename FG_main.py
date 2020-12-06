@@ -73,7 +73,7 @@ def donneSommetRingPlusProche(RING,sommet):
 
 def fourmisSurPopulation(Population,Cr,Ca):
     for indv in Population:
-        listeRing, listeHorsRing, listeLienHorsRing=mj.convertionAller(indv.RING,indv.PEER)
+        listeRing, listeHorsRing, listeLienHorsRing=mj.conversionAller(indv.RING,indv.PEER)
         mlisteRing, listeHorsRing, listeLienHorsRing, cout=mj.colonieFourmi(20,20,1,1,1,0.75,listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)
         indv.Cost=cout
         indv.RING=mj.conversionRetour(mlisteRing)
