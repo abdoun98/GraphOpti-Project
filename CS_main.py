@@ -127,11 +127,17 @@ def randomSolution(nbr, Ca):
     return ring, star, link
 
 
-def recuit(Cr, Ca):
+
+def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
     nbrItr = 100000
 
     size = len(Cr[0])
-    ring, star, link = randomSolution(size, Ca)
+    if beginRing == None or beginStar == None or beginLink == None:
+        ring, star, link = randomSolution(size, Ca)
+    else:
+        ring = beginRing[:]
+        star = beginStar[:]
+        link = beginLink[:]
     t = 1000000
     tf = 1
     N = 0.9
