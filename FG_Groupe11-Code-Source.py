@@ -1132,6 +1132,8 @@ def evolutionnaire(N, Cr, Ca, t_max):
                 if best[g - 14] == best[g]:
                     best_indv.append(Population[0])  # on sauve le nvx meilleur
                     break  # on passe à l'échantillon suivant
+            if g == G:
+                best_indv.append(Population[0])  # on n'a pas atteint un min local mais pas de assez de generations ou temps écoulé
 
     return best_indv
 

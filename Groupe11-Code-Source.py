@@ -1019,7 +1019,7 @@ def recuit2(Cr, Ca, ring):
 def evolutionnaire(N, Cr, Ca, t_max):
     # paramètres à modifier
     T = 10  # Taille de la population
-    G = 10  # Nombre maximal de génération
+    G = 20  # Nombre maximal de génération
     Pc = 0.9  # Probabilité de croisement
     Pm = 0.8  # Probabilité de mutation
 
@@ -1124,6 +1124,10 @@ def evolutionnaire(N, Cr, Ca, t_max):
                 if best[g - 14] == best[g]:
                     best_indv.append(Population[0])  # on sauve le nvx meilleur
                     break  # on passe à l'échantillon suivant
+            elif G <= 16:
+                best_indv.append(Population[0])
+
+
 
     return best_indv
 
@@ -1158,7 +1162,7 @@ if __name__ == '__main__':
     print("Temps = " + str(time.time() - a))
 
     #Pourcentage de remplissage du RING
-    print(len(popu[0])/N)
+    print(len(popu[0].RING)/N)
 
     # Ecriture de la solution dans le sous-dossier 'Outputs'.
     writeOutput(file, popu[0].RING, popu[0].PEER, popu[0].Cost)
