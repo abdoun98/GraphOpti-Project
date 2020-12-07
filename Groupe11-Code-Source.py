@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Dec  7 20:19:21 2020
-
-@author: francois
-"""
-
 ################ Graphes et optimisation combinatoire ################
 
 ####################### CHALLENGE 2020-2021 ##########################
