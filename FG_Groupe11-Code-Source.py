@@ -298,7 +298,7 @@ def randomSolution(nbr, Ca):
 # La fonction renvoie un ring, la liste de points en dehors du ring (star)
 # et les liens entre les points du ring et  du star (link).
 #
-# Le cout est calculé à chaque itération dans le script, elle bien sûr une condition
+# Le cout est calculé à chaque itération dans le script, elle est bien sûr une condition
 # essentielle dans la recherche de la meilleure configuration du problème.
 #
 # A appeler dans le main (dernière section).
@@ -538,7 +538,7 @@ def solutionAleatoire(N):
     return listeRing, listeHorsRing, listeLienHorsRing
 
 
-def fourmiApertirDAleatoire(nbParcour, i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout, mlisteRing,
+def fourmiApartirDAleatoire(nbParcour, i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout, mlisteRing,
                             mlisteHorsRing, mlisteLienHorsRing):
     listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire(i)
     listeRing = \
@@ -562,7 +562,12 @@ def construitProbaNbSommet(coutSelonNbSommet):
 
 
 ######################################################################
-#
+#CDF est un hybride entre colonie de fourmis et une recherche aléatoire
+#Dans un premier temps on fait tourner l'algorithme des foumis sur des solutions
+#générées aléatoirement, dont la taille du ring va de 1 elements à 100% des éléments
+#Ensuite nous relançons l'algo des fourmis sur nbIter solutions générées aléatoirement,
+#avec une probabilité supérieur que la taille du ring soit de la taille même taille
+#que celle des solutions qui on renvoyer de bonne solution lors de la première phase
 # Execution de l'algorithme pour une colonie de fourmis :
 # Cette fonction renvoie :
 # le ring (mlisteRing), les points hors du ring (mlisteHorsRing),
@@ -571,13 +576,12 @@ def construitProbaNbSommet(coutSelonNbSommet):
 #
 # A appeler dans le main (dernière section).
 #
-
 def CDF(nbParcour, nbIter, nbFourmis, alpha, beta, Q, omega):
     mcout = math.inf
     mlisteRing, mlisteHorsRing, mlisteLienHorsRing = [], [], []
     coutSelonNbSommet = []
     for i in range(len(Ca)):
-        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApertirDAleatoire(20, i, 20, alpha, beta, Q,
+        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApartirDAleatoire(20, i, 20, alpha, beta, Q,
                                                                                         omega, coutSelonNbSommet, mcout,
                                                                                         mlisteRing, mlisteHorsRing,
                                                                                         mlisteLienHorsRing)
@@ -585,7 +589,7 @@ def CDF(nbParcour, nbIter, nbFourmis, alpha, beta, Q, omega):
     probaNbSommet = construitProbaNbSommet(coutSelonNbSommet)
     for j in range(nbIter):
         n = random.choices(listeNbSommet, probaNbSommet, k=1)[0]
-        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApertirDAleatoire(nbParcour, n, nbFourmis, alpha,
+        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApartirDAleatoire(nbParcour, n, nbFourmis, alpha,
                                                                                         beta, Q,
                                                                                         omega, coutSelonNbSommet, mcout,
                                                                                         mlisteRing, mlisteHorsRing,
