@@ -1048,6 +1048,7 @@ def evolutionnaire(N, Cr, Ca, t_max):
 
         for g in range(G):  # G générations se succèdent
             if time.time() - t_init > t_max:  # si on dépasse le temps imparti, on sort de la boucle
+                best_indv.append(Population[0])  # si plus de temps, on rajoute l'individu best de la génération précédente
                 break
             print("\n" + str(m) + " - Generation : " + str(g))
 
@@ -1124,8 +1125,9 @@ def evolutionnaire(N, Cr, Ca, t_max):
                 if best[g - 14] == best[g]:
                     best_indv.append(Population[0])  # on sauve le nvx meilleur
                     break  # on passe à l'échantillon suivant
-            elif G <= 16:
+            elif g == G:
                 best_indv.append(Population[0])
+    print(len(best_indv))
 
 
 
@@ -1146,7 +1148,7 @@ if __name__ == '__main__':
     cout = 0
 
     # Nom du dataset à lire dans le sous-dossier 'Datasets'.
-    file = "data3"
+    file = "data2"
 
     # Extraction des données
     N, Ca, Cr = dataExtract(file)
