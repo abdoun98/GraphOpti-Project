@@ -618,27 +618,9 @@ class Individu:
 #
 # Initialisation des RINGS & STARS (les points hors du ring).
 #
-# 3 initialisations différentes :
-#   - initiate(N) : première initialisation triviale.
+# 2 initialisations différentes :
 #   - initiaterandom(N) : initialisation aléatoire.
 #   - initiate_GT(N, L) : initialisation de RINGS  de grande taille.
-
-
-def initiate(N):
-    RING = []
-    STAR = []
-    # élément du RING
-    A = N - 10  # nbre d'élément dans le RING
-    for i in range(A):
-        RING.append(i + 1)
-    # element dans STAR
-    for i in range(1, N + 1):
-        # print(i)
-        if i in RING:
-            continue
-        else:
-            STAR.append(i)
-    return RING, STAR
 
 
 # Initialisation aléatoire
@@ -1038,28 +1020,27 @@ def recuit2(Cr, Ca, ring):
 # A appeler dans le main (dernière section).
 #
 
-def evolutionnaire(N, Cr, Ca):
+def evolutionnaire(N, Cr, Ca, t_max):
+    # paramètres à modifier
     T = 10  # Taille de la population
-    G = 100  # Nombre maximal de génération
-    # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
-    # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
-    Pc = 0.9
-    Pm = 0.8
+    G = 10  # Nombre maximal de génération
+    Pc = 0.9  # Probabilité de croisement
+    Pm = 0.8  # Probabilité de mutation
+
+    # on peut choisir d'ajouter mannuellement des individus de grande taille
     L = int(N * 1)  # Taille de RING min pour les individus de grande taille
-    if L == N:
-        L -= 1  # pour les fct initiate
+    if L >= N:
+        L = N - 1  # pour les fct initiate
     NL = int(T * 0.5)  # Nombre d'individus de GT à ajouter
 
 
-    # On va faire plusieurs échantillon de population
-    MG = 5
+    # On va faire plusieurs échantillons de population dont on va sélectionner le meilleur individu
     best_indv = []
-    """
-    RING, STAR = initiate_GT(N, L)
-    Cost, PEER = evaluate(RING, STAR, Cr, Ca)
-    best_indv.append(Individu(RING, STAR, PEER, Cost))
-    """
-    for m in range(MG):
+
+    m = 0  # compte le nombre d'échantillons de populations défférentes avec lequelles on travaille
+    t_init = time.time()  # initialisation du temps de calcul
+    while time.time() - t_init < t_max:
+        m += 1
 
         # Initialisation
         Population = []
@@ -1070,6 +1051,8 @@ def evolutionnaire(N, Cr, Ca):
             Population.append(Individu(RING, STAR, PEER, c))
 
         for g in range(G):  # G générations se succèdent
+            if time.time() - t_init > t_max:  # si on dépasse le temps imparti, on sort de la boucle
+                break
             print("\n" + str(m) + " - Generation : " + str(g))
 
             # Sélection des couples
@@ -1097,6 +1080,8 @@ def evolutionnaire(N, Cr, Ca):
                         continue  # équivalent à continue si on était dans la loop
                     else:
                         e1, e2 = croisement_1pt(p1, p2)
+                        #e1, e2 = croisement_2pt(p1, p2)
+                        #e1, e2 = croisement_uniforme(p1, p2)
                         Enfant.append(e1)
                         Enfant.append(e2)
 
@@ -1115,28 +1100,34 @@ def evolutionnaire(N, Cr, Ca):
                 Population.append(Individu(Enfant[i], STAR, PEER, c))  # parents + enfants > T -> sélection à faire
 
             # Sélection d'individus
-            if len(Population) == T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
-                continue
-            else:
+            if len(Population) != T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
                 Population = selection_elitisme(T, Population)  # Selection par élitisme.
                 # Population = selection_roulette(T, Population) # Sélection par roulette.
                 # Population = selection_tournoi(T, Population) # Sélection par tournoi.
 
-            # print(Population[0].RING)
+            # Meilleur individu de la population g
             print("best = " + str(Population[0].Cost))
-            #print(6,Population[0].Cost)
             best.append(Population[0].Cost)
-            print(best)
-            #print(7,len(best))
 
-            #print(8,g)
+            # Ajout d'individus de grande taille si le RING optimal est très rempli
+            # selon le besoin, commenter/décommenter cette partie :
+            """
+            best.append(Population[0].Cost)
+            if g > 10:  # on fait minimum 10 itérations
+                if (best[g-2]/best[g]) < 1.01:  # moins de 1% d'amélioration entre 3 générations
+                    for l in range(NL):  # on rajoute NL individus de taille L min
+                        RING, STAR = initiate_GT(N, L)
+                        c, PEER = evaluate(RING, STAR, Cr, Ca)
+                        Population.append(Individu(RING, STAR, PEER, c))
+            #print(len(Population))
+            #"""
+
             # Break si on est bloqué sur un minimum
+            # Donc que la valeur ne change pas pdt plusieurs générations d'affilée
             if g > 16:
-             #   print(g)
                 if best[g - 14] == best[g]:
                     best_indv.append(Population[0])  # on sauve le nvx meilleur
                     break  # on passe à l'échantillon suivant
-
 
     return best_indv
 
@@ -1163,11 +1154,11 @@ if __name__ == '__main__':
     # Choix de l'algorithme à executer
     # Ring, Star, Link = recuit(Cr, Ca)
     a = time.time()
-    popu = evolutionnaire(N, Cr, Ca)
+    popu = evolutionnaire(N, Cr, Ca, 30)
     popu = sorted(popu, key=lambda x: x.Cost)
-    for i in range(len(popu) - 1):  # le dernier a juste servi au calibrage
+    for i in range(len(popu)):
         print(popu[i].Cost)
-    print(time.time() - a)
+    print("Temps = " + str(time.time() - a))
     # mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)
 
     # Sélection de la meilleure configuration parmi la population
