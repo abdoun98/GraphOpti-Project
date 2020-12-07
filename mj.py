@@ -27,10 +27,10 @@ def solutionAleatoire(N):
     return listeRing, listeHorsRing, listeLienHorsRing
 
 # évalue un scénario donné
-def evalue(listeRing, listeHorsRing, listeLienHorsRing):
+def evalue(listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca):
     c=0
     for i in range(len(listeRing)):
-        c+=Cr[listeRing[i-1]][listeRing[i]]
+        c+=Cr[int(listeRing[i-1])][int(listeRing[i])]
     for j in range(len(listeHorsRing)):
         c+=Ca[int(listeHorsRing[j])][int(listeLienHorsRing[j])]
     return c
@@ -49,7 +49,7 @@ def calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, fer
     return P
 
 #donne la visibilité de tout les sommets lors que nous sommes au sommet n
-def donneVisibilite(n,listeRingRef):
+def donneVisibilite(n,listeRingRef,Cr):
     visibilite=[]
     for elm in range(len(listeRingRef)):
         #Si la distance est egale à 0, on mets une visibilité égale à 0
@@ -60,7 +60,7 @@ def donneVisibilite(n,listeRingRef):
     return visibilite
 
 #algorithmes pour une fourmi
-def fourmi(alpha,beta, listeRingRef, ferom):
+def fourmi(alpha,beta, listeRingRef, ferom,Cr):
     #on choisie un sommet de départ
     n=random.randint(0,len(listeRingRef)-1)
     nonvisite=copy.deepcopy(listeRingRef)
@@ -70,7 +70,7 @@ def fourmi(alpha,beta, listeRingRef, ferom):
     #tant la fourmi n'a pas visité tout les sommets
     while len(nonvisite)>0:
         i+=1
-        visibilite=donneVisibilite(n,listeRingRef)
+        visibilite=donneVisibilite(n,listeRingRef,Cr)
         P=calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, ferom[n])
         n=random.choices(listeRingRef,P,k=1)[0]
         nonvisite.remove(n)
@@ -96,15 +96,15 @@ alpha: poids donné aux féromones pour choisir le chemin pris par une fourmi
 beta: poids donné à la visibilité pour choisir le chemin pris par une fourmi
 omega: taux (entre 0 et 1) de féromone gardée à chaque parcour du graphe
 Q: quantité (feromone*poids) de féromones déposées quand une fourmie passe sur un sommet'''
-def colonieFourmi(nbParcour, nbFourmis, alpha,beta,Q,omega, mlisteRing, listeHorsRing, listeLienHorsRing):
+def colonieFourmi(nbParcour, nbFourmis, alpha,beta,Q,omega, mlisteRing, listeHorsRing, listeLienHorsRing,Cr,Ca):
     dferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
     ferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
-    mcout=evalue(mlisteRing,listeHorsRing,listeLienHorsRing)
+    mcout=evalue(mlisteRing,listeHorsRing,listeLienHorsRing,Cr,Ca)
     listeRingRef=copy.deepcopy(mlisteRing)
     for k in range(nbParcour):
         for f in range(nbFourmis):
-            listeRing=fourmi(alpha, beta, listeRingRef, ferom)
-            cout=evalue(listeRing,listeHorsRing,listeLienHorsRing)
+            listeRing=fourmi(alpha, beta, listeRingRef, ferom,Cr)
+            cout=evalue(listeRing,listeHorsRing,listeLienHorsRing,Cr,Ca)
             dferom=deposeFerom(dferom,listeRing, listeRingRef, Q, cout)
             if cout<mcout:
                 mcout=cout
@@ -138,16 +138,35 @@ def construitProbaNbSommet(coutSelonNbSommet):
 
 #Dans tout le code nous travaillons avec des sommets dont le premier est le numéro 0, or dans l'énoncé le premier
 #sommet est le 1. Nous décalons donc tout nos sommets afin de respecter l'énoncé.
-def convertion(mlisteRing, listeHorsRing, listeLienHorsRing):
-    mlisteRing = np.array(mlisteRing) + np.ones((1, len(mlisteRing)))
+def conversionDeFin(mlisteRing, listeHorsRing, listeLienHorsRing):
+    mlisteRing = (np.array(mlisteRing) + np.ones((1, len(mlisteRing)))).toliste
     listeHorsRing = np.array(listeHorsRing) + np.ones((1, len(listeHorsRing)))
     listeLienHorsRing = np.array(listeLienHorsRing) + np.ones((1, len(listeLienHorsRing)))
     return mlisteRing, listeHorsRing, listeLienHorsRing
 
+def conversionAller(RING,PEER):
+    listeHorsRing=[]
+    listeLienHorsRing=[]
+    listeRing=(np.array(RING)-np.ones((1, len(RING)))).tolist()[0]
+    for i in PEER:
+        listeHorsRing+=[i[0]]
+        listeLienHorsRing+=[i[1]]
+    return listeRing, listeHorsRing, listeLienHorsRing
+
+def conversionRetour(listeRing, listeHorsRing=[], listeLienHorsRing=[]):
+    RING = np.array(listeRing) + np.ones((1, len(listeRing)))
+    RING=np.array(RING.tolist(), dtype='int').tolist()[0]
+    RING=RING[RING.index(1.):len(RING)]+RING[:RING.index(1)]
+    '''PEER=[]
+    STAR=listeHorsRing
+    for i in range(listeLienHorsRing):
+        PEER+=[[listeHorsRing[i],listeLienHorsRing[i]]]'''
+    return RING
+
 def fourmiApertirDAleatoire(nbParcour,i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout,mlisteRing, mlisteHorsRing, mlisteLienHorsRing):
     listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire(i)
-    listeRing = colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing)[0]
-    cout = evalue(listeRing, listeHorsRing, listeLienHorsRing)
+    listeRing = colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)[0]
+    cout = evalue(listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)
     coutSelonNbSommet += [cout]
     if cout < mcout:
         mcout = cout
@@ -161,7 +180,7 @@ if __name__ == '__main__':
     Ca = []  # cout des liens vers ring
 
     #on récupère les données
-    with open("Datasets/data4.txt") as f:
+    with open("Datasets/data1.txt") as f:
         data = f.readline()
         data = data.split()
         data = list(map(int, data))
