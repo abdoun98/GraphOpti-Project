@@ -1158,13 +1158,15 @@ if __name__ == '__main__':
     # Choix de l'algorithme à executer
     a = time.time()
     # Ring, Star, Link = recuit(Cr, Ca)  # Methode 1
-    popu = evolutionnaire(N, Cr, Ca, 30)  # Méthode 2
+    popu = evolutionnaire(N, Cr, Ca, 1)  # Méthode 2
     popu = sorted(popu, key=lambda x: x.Cost)
     for i in range(len(popu)):
         print(popu[i].Cost)
     # mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)  # Methode 3
     print("Temps = " + str(time.time() - a))
 
+    #Pourcentage de remplissage du RING
+    print(len(popu[0])/N)
 
     # Ecriture de la solution dans le sous-dossier 'Outputs'.
     writeOutput(file, popu[0].RING, popu[0].PEER, popu[0].Cost)
