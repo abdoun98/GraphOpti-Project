@@ -217,6 +217,53 @@ def croisement_uniforme(p1, p2):
     return enfants
 
 
+#############
+# Sélection #
+#############
+def selection_elitisme(T, popu):
+    popu = sorted(popu, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
+    popu = popu[:T]  # on ne garde que les individus avec le plus faible score
+    return popu
+
+
+def selection_tournoi(T, popu):
+    newpop = []
+    indices = [i for i in range(len(popu))]  # indices des Individus
+    for i in range(T):
+        A = random.choice(indices)
+        B = random.choice([j for j in indices if j != A])  # on prend 2 indices différents car 2 adversaires différents
+        if popu[A].Cost < popu[B].Cost:
+            newpop.append(popu[A])
+            indices.remove(A)  # A est sélectionné mais B peut continuer à participer à des tournois
+        else:
+            newpop.append(popu[B])
+            indices.remove(B)
+    return newpop
+
+
+# On associe à chaque individu une probabilité d'être tiré au sort en fonction de son score
+# Tel quel pas très adapté à notre problème tant les proba sont faibles
+# Il faudrait faire l'étalooner sur la différence de score entre le Cost min et Cost max
+# info : https://en.wikipedia.org/wiki/Selection_(genetic_algorithm)
+def selection_roulette(T, popu):
+    s = 0
+    for e in popu:
+        s += e.Cost
+    proba = []
+    for i in range(len(popu)):
+        proba.append((1/popu[i].Cost)/s)  # 1/popu[i] car on veut prendre le plus petit
+    print(proba)
+    newpop = []
+    while len(newpop) != T:
+        for i in range(len(popu)):
+            chance = random.random()
+            if chance > proba[i]:
+                continue  # cet individu n'est pas sélectionné
+            else:
+                newpop.append(popu[i])
+    return newpop
+
+
 ##################
 # Evolutionnaire #
 ##################
@@ -234,11 +281,11 @@ def evolutionnaire(N, Cr, Ca):
     # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
     # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
     Pc = 0.8
-    Pm = 0.5
-    L = int(N * 0.75)  # Taille de RING min pour les individus de grande taille
+    Pm = 0.8
+    L = int(N * 1)  # Taille de RING min pour les individus de grande taille
     if L == N:
         L -= 1  # pour les fct initiate
-    NL = int(T * 0.7)  # Nombre d'individus de GT à ajouter
+    NL = int(T * 0.5)  # Nombre d'individus de GT à ajouter
     best = []  # Tableau du meilleur individu pour chaque génération
 
     # Initialisation
@@ -254,7 +301,7 @@ def evolutionnaire(N, Cr, Ca):
         # Sélection des couples
         Couple = []
         pop = [i for i in range(0, T)]  # liste des indices des individus
-        for i in range(int(T / 2)):
+        for i in range(int(T/2)):
             A = random.choice(pop)
             pop.remove(A)
             B = random.choice(pop)
@@ -266,7 +313,7 @@ def evolutionnaire(N, Cr, Ca):
         for i in range(int(T / 2)):
             chance = random.random()  # chance in [0,1] car pas sûr de croiser
             if chance > Pc:
-                # print("Pas croisement" + "\n")
+                #print("Pas croisement" + "\n")
                 continue  # il n'y a pas de reproduction
 
             else:  # il y a reproduction (et donc croisement des caractéristiques)
@@ -284,7 +331,6 @@ def evolutionnaire(N, Cr, Ca):
             chance = random.random()
             if chance > Pm:
                 continue  # il n'y a pas de mutation
-
             else:  # il y a mutation chez l'enfant
                 if len(Enfant[i]) < 3:  # si Enfant est de taille 2, on ne permute pas car 1 toujours en 1ère place
                     continue
@@ -302,14 +348,16 @@ def evolutionnaire(N, Cr, Ca):
             Population.append(Individu(Enfant[i], STAR, PEER, c))  # parents + enfants > T -> sélection à faire
 
         # Sélection d'individus
-        Population = sorted(Population, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
-        Population = Population[:T]  # on ne garde que les individus avec le plus faible score
-        print(len(Population))
-
+        if len(Population) == T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
+            continue
+        else:
+            Population = selection_elitisme(T, Population)
         print("best = " + str(Population[0].Cost))
 
-        #"""
+
         # Ajout d'individus de grande taille
+        # selon le besoin, commenter/décommenter cette partie :
+        #"""
         best.append(Population[0].Cost)
         if g > 10:  # on fait minimum 10 itérations
             if (best[g-2]/best[g]) < 1.01:  # moins de 1% d'amélioration entre 3 générations
@@ -317,7 +365,7 @@ def evolutionnaire(N, Cr, Ca):
                     RING, STAR = initiate_GT(N, L)
                     c, PEER = evaluate(RING, STAR, Cr, Ca)
                     Population.append(Individu(RING, STAR, PEER, c))
-        print(len(Population))
+        #print(len(Population))
         #"""
 
     # Affichage
@@ -368,7 +416,8 @@ if __name__ == '__main__':
     # Résolution #
     ##############
     # listeRing, listeHorsRing = initiate(N)
-    listeRing, listeHorsRing = initiate_GT(N, 40)
+    listeRing, listeHorsRing = initiaterandom(N)
+    #listeRing, listeHorsRing = initiate_GT(N, 40)
     cost, listeLienHorsRing = evaluate(listeRing, listeHorsRing, Cr, Ca)
 
     population = evolutionnaire(N, Cr, Ca)
