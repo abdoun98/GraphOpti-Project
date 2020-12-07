@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Dec  7 20:19:21 2020
+
+@author: francois
+"""
+
 ################ Graphes et optimisation combinatoire ################
 
 ####################### CHALLENGE 2020-2021 ##########################
@@ -28,6 +36,7 @@ import random
 import numpy as np
 import math
 import copy
+import time
 
 ######################################################################
 #                   LECTURE & ECRITURE DES FICHIERS                  #
@@ -55,6 +64,7 @@ def dataExtract(file):
         print("fin d'extraction des donnees")
     return N, Ca, Cr
 
+
 # ECRITURE
 def writeOutput(file, listRing, listHorsRing, cout):
     with open("Outputs/output-" + file + ".txt", "w") as f:
@@ -66,6 +76,7 @@ def writeOutput(file, listRing, listHorsRing, cout):
             f.write("\n{} {}".format(elem[0], elem[1]))
         f.write("\nCOST {}".format(cout))
 
+
 ######################################################################
 #                          RECHERCHE TABOU                           #
 ######################################################################
@@ -75,28 +86,29 @@ def writeOutput(file, listRing, listHorsRing, cout):
 # A appeler dans le main (dernière section).
 #
 
-def tabou(N,tailleMaxTabou):
+def tabou(N, tailleMaxTabou):
     mListeRing = []
-    listeTabou=[]
+    listeTabou = []
     listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
-    meilleurCout=evalue(listeRing, listeHorsRing, listeLienHorsRing)
+    meilleurCout = evalue(listeRing, listeHorsRing, listeLienHorsRing)
     for i in range(N):
-        meilleurCoutLocal=math.inf
+        meilleurCoutLocal = math.inf
         mListeRingLocal = []
         for j in range(len(listeRing)):
             copListeRing = copy.deepcopy(listeRing)
             copListeRing = permuteRing(copListeRing, j)
             cout = evalue(copListeRing, listeHorsRing, listeLienHorsRing)
-            if cout<meilleurCoutLocal and copListeRing not in listeTabou:
-                meilleurCoutLocal=cout
-                mListeRingLocal=copy.deepcopy(copListeRing)
-                if meilleurCoutLocal<meilleurCout:
-                    meilleurCout=meilleurCoutLocal
-                    mListeRing=copy.deepcopy(mListeRingLocal)
-        listeTabou+=[mListeRing]
-        if len(listeTabou)>tailleMaxTabou:
-            listeTabou=listeTabou[1:]
-    return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
+            if cout < meilleurCoutLocal and copListeRing not in listeTabou:
+                meilleurCoutLocal = cout
+                mListeRingLocal = copy.deepcopy(copListeRing)
+                if meilleurCoutLocal < meilleurCout:
+                    meilleurCout = meilleurCoutLocal
+                    mListeRing = copy.deepcopy(mListeRingLocal)
+        listeTabou += [mListeRing]
+        if len(listeTabou) > tailleMaxTabou:
+            listeTabou = listeTabou[1:]
+    return meilleurCout, mListeRing, listeHorsRing, listeLienHorsRing
+
 
 ######################################################################
 #                      VOISINAGE VARIABLE                            #
@@ -108,6 +120,7 @@ def tabou(N,tailleMaxTabou):
 def permuteRing(listeRing, i):
     listeRing[i], listeRing[i - 1] = listeRing[i - 1], listeRing[i]
     return listeRing
+
 
 ######################################################################
 #
@@ -122,18 +135,19 @@ def permuteRing(listeRing, i):
 #
 
 def voisinageVariable(N):
-    meilleurCout=math.inf
-    mListeRing=[]
+    meilleurCout = math.inf
+    mListeRing = []
     for i in range(N):
         listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire()
         for j in range(len(listeRing)):
-            copListeRing=copy.deepcopy(listeRing)
-            copListeRing=permuteRing(copListeRing, j)
-            cout=evalue(copListeRing, listeHorsRing, listeLienHorsRing)
-            if cout<meilleurCout:
-                meilleurCout=cout
-                mListeRing=copy.deepcopy(copListeRing)
-    return meilleurCout, mListeRing, listeHorsRing,listeLienHorsRing
+            copListeRing = copy.deepcopy(listeRing)
+            copListeRing = permuteRing(copListeRing, j)
+            cout = evalue(copListeRing, listeHorsRing, listeLienHorsRing)
+            if cout < meilleurCout:
+                meilleurCout = cout
+                mListeRing = copy.deepcopy(copListeRing)
+    return meilleurCout, mListeRing, listeHorsRing, listeLienHorsRing
+
 
 ######################################################################
 #                           RECUIT SIMULE                            #
@@ -144,16 +158,17 @@ def voisinageVariable(N):
 
 def getScore(Cr, Ca, ring, star, link):
     score = 0
-    #Calcul du score du ring
+    # Calcul du score du ring
     for i, elem in enumerate(ring):
-        cr = Cr[ring[i]-1][ring[(i+1)%len(ring)]-1]
+        cr = Cr[ring[i] - 1][ring[(i + 1) % len(ring)] - 1]
         score += cr
 
-    #Calcul du score d'assignement (dans le star)
+    # Calcul du score d'assignement (dans le star)
     for i, elem in enumerate(star):
-        ca = Ca[star[i]-1][link[i]-1]
+        ca = Ca[star[i] - 1][link[i] - 1]
         score += ca
     return score
+
 
 ######################################################################
 #
@@ -164,12 +179,12 @@ def getScore(Cr, Ca, ring, star, link):
 #
 
 def permRing(ring):
-    #print("ping permRing")
+    # print("ping permRing")
 
     # Choisi deux elements du ring
     i = random.randrange(1, len(ring))
     j = random.randrange(len(ring))
-    while i==j or j==0:
+    while i == j or j == 0:
         # Si c'est les mêmes ou on touche au premier, on en prend un autre
         j = random.randrange(len(ring))
     tmp = ring[i]
@@ -177,8 +192,9 @@ def permRing(ring):
     ring[j] = tmp
     return ring
 
+
 def permOutOfRing(ring, star, link, Ca):
-    #print("ping permOutOfRing")
+    # print("ping permOutOfRing")
     i = random.randrange(1, len(ring))
     elem = ring[i]
     # print(elem)
@@ -201,8 +217,9 @@ def permOutOfRing(ring, star, link, Ca):
     link.append(minPos)
     return ring, star, link
 
+
 def permIntoRing(ring, star, link):
-    #print("ping permIntoRing")
+    # print("ping permIntoRing")
     i = random.randrange(len(star))
     elem = star[i]
     del star[i]
@@ -210,36 +227,38 @@ def permIntoRing(ring, star, link):
     ring.append(elem)
     return ring, star, link
 
+
 ######################################################################
 #
 # 'Create movement' est la manière de passer à un voisin.
 #
 
 def createMovement(ring, star, link, Ca):
-    #On crée de nouvelles listes pour éviter des problemes de programmation, sinon ca bug
+    # On crée de nouvelles listes pour éviter des problemes de programmation, sinon ca bug
     newRing = ring[:]
     newStar = star[:]
     newLink = link[:]
-    #Les trois mouvements disponibles sont: permuter dans le ring, ajouter un élement dans le ring et retirer un élement
-    #du ring
-    #on en prend un au hasard
+    # Les trois mouvements disponibles sont: permuter dans le ring, ajouter un élement dans le ring et retirer un élement
+    # du ring
+    # on en prend un au hasard
     select = random.randrange(3)
-    if select == 0: #on fait une permutation dans le ring
-        if len(newRing) <= 2: #on ne peut pas faire une permutation si il n'y a qu'un seul élement
+    if select == 0:  # on fait une permutation dans le ring
+        if len(newRing) <= 2:  # on ne peut pas faire une permutation si il n'y a qu'un seul élement
             createMovement(newRing, newStar, newLink, Ca)
         else:
             newRing = permRing(newRing)
-    elif select == 1: #on retire un element du ring
-        if len(newRing) <= 1: #il doit toujours avoir un element du ring
+    elif select == 1:  # on retire un element du ring
+        if len(newRing) <= 1:  # il doit toujours avoir un element du ring
             createMovement(newRing, newStar, newLink, Ca)
         else:
             newRing, newStar, newLink = permOutOfRing(newRing, newStar, newLink, Ca)
     else:
-        if len(newStar) <= 0: #on ne peut pas ajouter un element dans le ring si il ne reste rien à ajouter
+        if len(newStar) <= 0:  # on ne peut pas ajouter un element dans le ring si il ne reste rien à ajouter
             createMovement(newRing, newStar, newLink, Ca)
         else:
             newRing, newStar, newLink = permIntoRing(newRing, newStar, newLink)
     return newRing, newStar, newLink
+
 
 ######################################################################
 #
@@ -247,29 +266,30 @@ def createMovement(ring, star, link, Ca):
 #
 
 def randomSolution(nbr, Ca):
-    ringRndTreshold = 0.5 #chance de mettre un élement dans le ring
-    listOfPoint = list(range(2, nbr+1)) #creation d'une liste de 2 à n
+    ringRndTreshold = 0.5  # chance de mettre un élement dans le ring
+    listOfPoint = list(range(2, nbr + 1))  # creation d'une liste de 2 à n
 
-    random.shuffle(listOfPoint) #on mélange
-    ring = [1]  #le premier element du ring est toujours 1
+    random.shuffle(listOfPoint)  # on mélange
+    ring = [1]  # le premier element du ring est toujours 1
 
-    while len(ring) ==0: #Ring peut pas etre vide. Ca devrait etre toujours le cas mais avant ring = [1] n'existait pas
+    while len(
+            ring) == 0:  # Ring peut pas etre vide. Ca devrait etre toujours le cas mais avant ring = [1] n'existait pas
         for i, elem in enumerate(listOfPoint):
             if random.random() <= ringRndTreshold:
                 ring.append(elem)
                 del listOfPoint[i]
 
-
-    star = listOfPoint #star est les points restant
+    star = listOfPoint  # star est les points restant
     link = []
-    for elem in star: #on crée des affectations, qui sont les meilleurs disponibles
-        #print(ring)
-        #print(Ca[elem-1])
-        #print([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
-        minimum = min([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
-        minPos = Ca[elem-1].index(minimum) + 1
+    for elem in star:  # on crée des affectations, qui sont les meilleurs disponibles
+        # print(ring)
+        # print(Ca[elem-1])
+        # print([j for i, j in enumerate(Ca[elem-1]) if i + 1 in ring])
+        minimum = min([j for i, j in enumerate(Ca[elem - 1]) if i + 1 in ring])
+        minPos = Ca[elem - 1].index(minimum) + 1
         link.append(minPos)
     return ring, star, link
+
 
 ######################################################################
 #
@@ -284,19 +304,19 @@ def randomSolution(nbr, Ca):
 # A appeler dans le main (dernière section).
 #
 
-def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
-    nbrItr = 100000 #nombre d'iteration
+def recuit(Cr, Ca, beginRing=None, beginStar=None, beginLink=None):
+    nbrItr = 100000  # nombre d'iteration
 
     size = len(Cr[0])
     if beginRing == None or beginStar == None or beginLink == None:
         ring, star, link = randomSolution(size, Ca)
-    else: #on copie pour éviter les problemes
+    else:  # on copie pour éviter les problemes
         ring = beginRing[:]
         star = beginStar[:]
         link = beginLink[:]
-    t = 1000000 #temperature initiale
-    tf = 1 #temperature finale
-    N = 0.9 #palier
+    t = 1000000  # temperature initiale
+    tf = 1  # temperature finale
+    N = 0.9  # palier
     currentScore = getScore(Cr, Ca, ring, star, link)
 
     while t > tf:
@@ -310,11 +330,11 @@ def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
                 link = newLink
             else:
                 # sans cette ligne, les nombres deviennent trop extreme pour l'exp()
-                if (newScore-currentScore)/t < -20:
+                if (newScore - currentScore) / t < -20:
                     P = 0
                 else:
-                    P = math.exp((currentScore-newScore)/t)
-                if P >=random.random():
+                    P = math.exp((currentScore - newScore) / t)
+                if P >= random.random():
                     currentScore = newScore
                     ring = newRing
                     star = newStar
@@ -325,6 +345,7 @@ def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
             t = t * N
     return ring, star, link
 
+
 ######################################################################
 #                 ALGORITHME COLONIE DE FOURMIS                      #
 ######################################################################
@@ -333,27 +354,29 @@ def recuit(Cr, Ca, beginRing = None, beginStar = None, beginLink = None):
 # le plus proche.
 #
 
-def donneSommetRingPlusProche(RING,sommet):
+def donneSommetRingPlusProche(RING, sommet):
     m = math.inf
     s = -1
     for j in RING:
-        if m > Ca[sommet-1][j-1]:
-            m = Ca[sommet-1][j-1]
+        if m > Ca[sommet - 1][j - 1]:
+            m = Ca[sommet - 1][j - 1]
             s = j
     return s
+
 
 ######################################################################
 #
 # Fonction qui calcule le cout pour une configuration donnée.
 #
 
-def evalue(listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca):
-    c=0
+def evalue(listeRing, listeHorsRing, listeLienHorsRing, Cr, Ca):
+    c = 0
     for i in range(len(listeRing)):
-        c+=Cr[int(listeRing[i-1])][int(listeRing[i])]
+        c += Cr[int(listeRing[i - 1])][int(listeRing[i])]
     for j in range(len(listeHorsRing)):
-        c+=Ca[int(listeHorsRing[j])][int(listeLienHorsRing[j])]
+        c += Ca[int(listeHorsRing[j])][int(listeLienHorsRing[j])]
     return c
+
 
 ######################################################################
 #
@@ -363,90 +386,97 @@ def evalue(listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca):
 # 'donneVisivilite' donne la visibilité de tout les points lorsque nous sommes au point n.
 #
 
-def donneVisibilite(n,listeRingRef,Cr):
-    visibilite=[]
+def donneVisibilite(n, listeRingRef, Cr):
+    visibilite = []
     for elm in range(len(listeRingRef)):
-        #Si la distance est egale à 0, on mets une visibilité égale à 0
-        if Cr[elm][n]==0:
-            visibilite +=[0]
+        # Si la distance est egale à 0, on mets une visibilité égale à 0
+        if Cr[elm][n] == 0:
+            visibilite += [0]
         else:
             visibilite += [1 / Cr[elm][n]]
     return visibilite
+
 
 #
 # Fonction pour calculer la probabilité d'aller en chaque point de "listeRingRef".
 #
 
 def calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, ferom):
-    P=[]
-    denom=0
+    P = []
+    denom = 0
     for i in nonvisite:
         denom += ferom[listeRingRef.index(i)] ** alpha + visibilite[listeRingRef.index(i)] ** beta
     for elmt in range(len(listeRingRef)):
         if listeRingRef[elmt] in nonvisite:
-            P+=[(ferom[elmt]**alpha+visibilite[elmt]**beta)/denom]
+            P += [(ferom[elmt] ** alpha + visibilite[elmt] ** beta) / denom]
         else:
-            P+=[0]
+            P += [0]
     return P
+
 
 #
 # Algorithme pour une fourmi. Pour fonctionner, elle a besoin des deux
 # dernières fonctions : 'donneVisibilite' et 'calculer_vecteur_proba'.
 #
 
-def fourmi(alpha,beta, listeRingRef, ferom,Cr):
-    #on choisie un sommet de départ
-    n=random.randint(0,len(listeRingRef)-1)
-    nonvisite=copy.deepcopy(listeRingRef)
-    listeSommet=[listeRingRef[n]]
+def fourmi(alpha, beta, listeRingRef, ferom, Cr):
+    # on choisie un sommet de départ
+    n = random.randint(0, len(listeRingRef) - 1)
+    nonvisite = copy.deepcopy(listeRingRef)
+    listeSommet = [listeRingRef[n]]
     nonvisite.remove(listeRingRef[n])
-    i=0
-    #tant la fourmi n'a pas visité tout les sommets
-    while len(nonvisite)>0:
-        i+=1
-        visibilite=donneVisibilite(n,listeRingRef,Cr)
-        P=calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, ferom[n])
-        n=random.choices(listeRingRef,P,k=1)[0]
+    i = 0
+    # tant la fourmi n'a pas visité tout les sommets
+    while len(nonvisite) > 0:
+        i += 1
+        visibilite = donneVisibilite(n, listeRingRef, Cr)
+        P = calculer_vecteur_proba(alpha, beta, listeRingRef, nonvisite, visibilite, ferom[n])
+        n = random.choices(listeRingRef, P, k=1)[0]
         nonvisite.remove(n)
-        listeSommet+=[n]
-        n=listeRingRef.index(n)
+        listeSommet += [n]
+        n = listeRingRef.index(n)
     return listeSommet
+
 
 ######################################################################
 #
 # Fonctions nécessaires à l'implémentation de la colonie de fourmis.
 #
 
-def conversionAller(RING,PEER):
-    listeHorsRing=[]
-    listeLienHorsRing=[]
-    listeRing=(np.array(RING)-np.ones((1, len(RING)))).tolist()[0]
+def conversionAller(RING, PEER):
+    listeHorsRing = []
+    listeLienHorsRing = []
+    listeRing = (np.array(RING) - np.ones((1, len(RING)))).tolist()[0]
     for i in PEER:
-        listeHorsRing+=[i[0]]
-        listeLienHorsRing+=[i[1]]
+        listeHorsRing += [i[0]]
+        listeLienHorsRing += [i[1]]
     return listeRing, listeHorsRing, listeLienHorsRing
+
 
 def conversionRetour(listeRing, listeHorsRing=[], listeLienHorsRing=[]):
     RING = np.array(listeRing) + np.ones((1, len(listeRing)))
-    RING=np.array(RING.tolist(), dtype='int').tolist()[0]
-    RING=RING[RING.index(1.):len(RING)]+RING[:RING.index(1)]
+    RING = np.array(RING.tolist(), dtype='int').tolist()[0]
+    RING = RING[RING.index(1.):len(RING)] + RING[:RING.index(1)]
     '''PEER=[]
     STAR=listeHorsRing
     for i in range(listeLienHorsRing):
         PEER+=[[listeHorsRing[i],listeLienHorsRing[i]]]'''
     return RING
 
+
 def deposeFerom(dferom, listeRing, listeRingRef, Q, cout):
-    for i in range(len(listeRing)-1):
-        dferom[listeRingRef.index(listeRing[i])][listeRingRef.index(listeRing[i+1])]+=Q/cout
+    for i in range(len(listeRing) - 1):
+        dferom[listeRingRef.index(listeRing[i])][listeRingRef.index(listeRing[i + 1])] += Q / cout
     return dferom
+
 
 def evaporerFerom(dferom, ferom, omega):
     for i in range(len(ferom)):
         for j in range(len(ferom)):
-            ferom[i][j]=ferom[i][j]*(1-omega)+dferom[i][j]
-    dferom=np.zeros((len(dferom), len(dferom))).tolist()
-    return ferom,dferom
+            ferom[i][j] = ferom[i][j] * (1 - omega) + dferom[i][j]
+    dferom = np.zeros((len(dferom), len(dferom))).tolist()
+    return ferom, dferom
+
 
 ######################################################################
 #
@@ -460,21 +490,22 @@ def evaporerFerom(dferom, ferom, omega):
 #   - Q : quantité (feromone*poids) de féromones déposées quand une fourmi passe sur un sommet.
 
 
-def colonieFourmi(nbParcour, nbFourmis, alpha,beta,Q,omega, mlisteRing, listeHorsRing, listeLienHorsRing,Cr,Ca):
+def colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, mlisteRing, listeHorsRing, listeLienHorsRing, Cr, Ca):
     dferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
     ferom = np.zeros((len(mlisteRing), len(mlisteRing))).tolist()
-    mcout=evalue(mlisteRing,listeHorsRing,listeLienHorsRing,Cr,Ca)
-    listeRingRef=copy.deepcopy(mlisteRing)
+    mcout = evalue(mlisteRing, listeHorsRing, listeLienHorsRing, Cr, Ca)
+    listeRingRef = copy.deepcopy(mlisteRing)
     for k in range(nbParcour):
         for f in range(nbFourmis):
-            listeRing=fourmi(alpha, beta, listeRingRef, ferom,Cr)
-            cout=evalue(listeRing,listeHorsRing,listeLienHorsRing,Cr,Ca)
-            dferom=deposeFerom(dferom,listeRing, listeRingRef, Q, cout)
-            if cout<mcout:
-                mcout=cout
-                mlisteRing=copy.deepcopy(listeRing)
-        ferom, dferom=evaporerFerom(dferom, ferom,omega)
+            listeRing = fourmi(alpha, beta, listeRingRef, ferom, Cr)
+            cout = evalue(listeRing, listeHorsRing, listeLienHorsRing, Cr, Ca)
+            dferom = deposeFerom(dferom, listeRing, listeRingRef, Q, cout)
+            if cout < mcout:
+                mcout = cout
+                mlisteRing = copy.deepcopy(listeRing)
+        ferom, dferom = evaporerFerom(dferom, ferom, omega)
     return mlisteRing, listeHorsRing, listeLienHorsRing, mcout
+
 
 ######################################################################
 #
@@ -494,10 +525,11 @@ def attributSommetRing(listeRing, listeHorsRing, listeLienHorsRing):
                 s = listeRing[j]
         listeLienHorsRing[i] = s
 
+
 def solutionAleatoire(N):
-    listeHorsRing = np.array(np.linspace(1, len(Ca), len(Ca)-1, endpoint=False), dtype='int').tolist()
+    listeHorsRing = np.array(np.linspace(1, len(Ca), len(Ca) - 1, endpoint=False), dtype='int').tolist()
     listeRing = [0]
-    for i in range(N-2):
+    for i in range(N - 2):
         n = random.randint(0, len(Ca) - i - 2)
         listeRing.append(listeHorsRing[n])
         listeHorsRing.remove(listeHorsRing[n])
@@ -505,10 +537,13 @@ def solutionAleatoire(N):
     attributSommetRing(listeRing, listeHorsRing, listeLienHorsRing)
     return listeRing, listeHorsRing, listeLienHorsRing
 
-def fourmiApertirDAleatoire(nbParcour,i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout,mlisteRing, mlisteHorsRing, mlisteLienHorsRing):
+
+def fourmiApertirDAleatoire(nbParcour, i, nbFourmis, alpha, beta, Q, omega, coutSelonNbSommet, mcout, mlisteRing,
+                            mlisteHorsRing, mlisteLienHorsRing):
     listeRing, listeHorsRing, listeLienHorsRing = solutionAleatoire(i)
-    listeRing = colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)[0]
-    cout = evalue(listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)
+    listeRing = \
+    colonieFourmi(nbParcour, nbFourmis, alpha, beta, Q, omega, listeRing, listeHorsRing, listeLienHorsRing, Cr, Ca)[0]
+    cout = evalue(listeRing, listeHorsRing, listeLienHorsRing, Cr, Ca)
     coutSelonNbSommet += [cout]
     if cout < mcout:
         mcout = cout
@@ -517,12 +552,14 @@ def fourmiApertirDAleatoire(nbParcour,i, nbFourmis, alpha, beta, Q, omega, coutS
         mlisteLienHorsRing = copy.deepcopy(listeLienHorsRing)
     return mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing
 
+
 def construitProbaNbSommet(coutSelonNbSommet):
     probaNbSommet = []
-    somme=sum(coutSelonNbSommet)
+    somme = sum(coutSelonNbSommet)
     for i in coutSelonNbSommet:
-        probaNbSommet+=[i/somme]
+        probaNbSommet += [i / somme]
     return probaNbSommet
+
 
 ######################################################################
 #
@@ -537,20 +574,24 @@ def construitProbaNbSommet(coutSelonNbSommet):
 
 def CDF(nbParcour, nbIter, nbFourmis, alpha, beta, Q, omega):
     mcout = math.inf
-    mlisteRing, mlisteHorsRing, mlisteLienHorsRing=[],[],[]
-    coutSelonNbSommet=[]
+    mlisteRing, mlisteHorsRing, mlisteLienHorsRing = [], [], []
+    coutSelonNbSommet = []
     for i in range(len(Ca)):
-        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing=fourmiApertirDAleatoire(20,i, 20, alpha, beta, Q,
-                                                                                      omega, coutSelonNbSommet, mcout,
-                                                                                      mlisteRing, mlisteHorsRing, mlisteLienHorsRing)
-    listeNbSommet = np.array(np.linspace(1, len(Ca)+1, len(Ca), endpoint=False), dtype='int').tolist()
-    probaNbSommet=construitProbaNbSommet(coutSelonNbSommet)
+        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApertirDAleatoire(20, i, 20, alpha, beta, Q,
+                                                                                        omega, coutSelonNbSommet, mcout,
+                                                                                        mlisteRing, mlisteHorsRing,
+                                                                                        mlisteLienHorsRing)
+    listeNbSommet = np.array(np.linspace(1, len(Ca) + 1, len(Ca), endpoint=False), dtype='int').tolist()
+    probaNbSommet = construitProbaNbSommet(coutSelonNbSommet)
     for j in range(nbIter):
         n = random.choices(listeNbSommet, probaNbSommet, k=1)[0]
-        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApertirDAleatoire(nbParcour, n, nbFourmis, alpha, beta, Q,
+        mcout, mlisteRing, mlisteHorsRing, mlisteLienHorsRing = fourmiApertirDAleatoire(nbParcour, n, nbFourmis, alpha,
+                                                                                        beta, Q,
                                                                                         omega, coutSelonNbSommet, mcout,
-                                                                                        mlisteRing, mlisteHorsRing, mlisteLienHorsRing)
+                                                                                        mlisteRing, mlisteHorsRing,
+                                                                                        mlisteLienHorsRing)
     return mlisteRing, mlisteHorsRing, mlisteLienHorsRing, mcout
+
 
 ######################################################################
 #                   ALGORITHME EVOLUTIONNAIRE                        #
@@ -571,6 +612,7 @@ class Individu:
         self.STAR = STAR
         self.PEER = PEER
         self.Cost = Cost
+
 
 ######################################################################
 #
@@ -597,6 +639,7 @@ def initiate(N):
         else:
             STAR.append(i)
     return RING, STAR
+
 
 # Initialisation aléatoire
 def initiaterandom(N):
@@ -639,6 +682,7 @@ def initiate_GT(N, L):
         STAR.remove(STAR[n])
     return RING, STAR
 
+
 ######################################################################
 #
 # Fonction d'évaluation :
@@ -666,6 +710,7 @@ def evaluate(RING, STAR, Cr, Ca):
         c += cmin
         # print("update cout hr ({}) : {}".format(i, c))
     return c, PEER
+
 
 ######################################################################
 #
@@ -784,6 +829,7 @@ def croisement_uniforme(p1, p2):
     # print("p1 : " + str(p1) + "\n" + "p2 : " + str(p2) + "\n" + "e1 : " + str(e1) + "\n" + "e2 : " + str(e2) + "\n")
     return enfants
 
+
 ######################################################################
 #
 # Fonctions de sélection : Permet la sélection d'individus dans une population.
@@ -797,6 +843,7 @@ def selection_elitisme(T, popu):
     popu = sorted(popu, key=lambda x: x.Cost)  # Tri des individus de Population selon leur score
     popu = popu[:T]  # on ne garde que les individus avec le plus faible score
     return popu
+
 
 def selection_tournoi(T, popu):
     newpop = []
@@ -812,6 +859,7 @@ def selection_tournoi(T, popu):
             indices.remove(B)
     return newpop
 
+
 # On associe à chaque individu une probabilité d'être tiré au sort en fonction de son score
 # Tel quel pas très adapté à notre problème tant les proba sont faibles
 # Il faudrait faire l'étalooner sur la différence de score entre le Cost min et Cost max
@@ -822,7 +870,7 @@ def selection_roulette(T, popu):
         s += e.Cost
     proba = []
     for i in range(len(popu)):
-        proba.append((1/popu[i].Cost)/s)  # 1/popu[i] car on veut prendre le plus petit
+        proba.append((1 / popu[i].Cost) / s)  # 1/popu[i] car on veut prendre le plus petit
     print(proba)
     newpop = []
     while len(newpop) != T:
@@ -834,6 +882,7 @@ def selection_roulette(T, popu):
                 newpop.append(popu[i])
     return newpop
 
+
 ######################################################################
 #
 # Fonction qui execute l'algorithme colonie de fourmis sur une population.
@@ -844,14 +893,16 @@ def selection_roulette(T, popu):
 # un coût moindre qu'avant son appel.
 #
 
-def fourmisSurPopulation(Population,Cr,Ca):
+def fourmisSurPopulation(Population, Cr, Ca):
     for indv in Population:
-        listeRing, listeHorsRing, listeLienHorsRing=conversionAller(indv.RING,indv.PEER)
-        mlisteRing, listeHorsRing, listeLienHorsRing, cout=colonieFourmi(20,20,1,1,1,0.75,
-                                        listeRing, listeHorsRing, listeLienHorsRing,Cr,Ca)
-        indv.Cost=cout
-        indv.RING=conversionRetour(mlisteRing)
+        listeRing, listeHorsRing, listeLienHorsRing = conversionAller(indv.RING, indv.PEER)
+        mlisteRing, listeHorsRing, listeLienHorsRing, cout = colonieFourmi(20, 20, 1, 1, 1, 0.75,
+                                                                           listeRing, listeHorsRing, listeLienHorsRing,
+                                                                           Cr, Ca)
+        indv.Cost = cout
+        indv.RING = conversionRetour(mlisteRing)
     return Population
+
 
 ######################################################################
 #
@@ -881,6 +932,7 @@ def mutation1(Pm, Enfant):
                 Enfant[i][n], Enfant[i][n + 1] = Enfant[i][n + 1], Enfant[i][n]
     return Enfant
 
+
 def mutation2(Pm, Enfant):
     for i in range(len(Enfant)):
         chance = random.random()
@@ -893,14 +945,15 @@ def mutation2(Pm, Enfant):
             else:
                 temp = list(Enfant[i])
                 taille = 1
-                while taille%2 != 0:
+                while taille % 2 != 0:
                     taille = random.randint(2, len(temp) - 2)
-                for j in range(int(taille/2)):
+                for j in range(int(taille / 2)):
                     temp.pop(0)
                     temp.pop(-1)
                 temp.reverse()
-                Enfant[i][int(taille/2):len(Enfant[i])-int(taille/2)] = temp
+                Enfant[i][int(taille / 2):len(Enfant[i]) - int(taille / 2)] = temp
     return Enfant
+
 
 def mutation3(Pm, Enfant, Cr, Ca):
     for i in range(len(Enfant)):
@@ -914,6 +967,7 @@ def mutation3(Pm, Enfant, Cr, Ca):
                 Enfant[i] = recuit2(Cr, Ca, Enfant[i])
     return Enfant
 
+
 ######################################################################
 #
 # Les deux fonctions suivantes sont des adaptations du Recuit Simulé
@@ -921,7 +975,7 @@ def mutation3(Pm, Enfant, Cr, Ca):
 # version hybridée de l'algorithme évolutionnaire (via mutation3).
 #
 
-#Prérecuit appelé dans recuit2()
+# Prérecuit appelé dans recuit2()
 def preRecuit2(Ca, ring):
     nbr = len(Ca[0])
     star = list(range(1, nbr + 1))
@@ -935,9 +989,10 @@ def preRecuit2(Ca, ring):
         link.append(minPos)
     return ring, star, link
 
-#Recuit simulé adapté à l'algo évolutionnaire
+
+# Recuit simulé adapté à l'algo évolutionnaire
 def recuit2(Cr, Ca, ring):
-    nbrItr = 10
+    nbrItr = 20
 
     t = 3
     tf = 0.1
@@ -957,20 +1012,21 @@ def recuit2(Cr, Ca, ring):
                 star = newStar
                 link = newLink
             else:
-                if (newScore-currentScore)/t < -20:
+                if (newScore - currentScore) / t < -20:
                     P = 0
                 else:
-                    P = math.exp((currentScore-newScore)/t)
-                if P >=random.random():
+                    P = math.exp((currentScore - newScore) / t)
+                if P >= random.random():
                     currentScore = newScore
                     ring = newRing
                     star = newStar
                     link = newLink
 
-        #print(ring, star, link, currentScore, t)
+        # print(ring, star, link, currentScore, t)
         if t > tf:
             t = t * N
     return ring
+
 
 ######################################################################
 #
@@ -983,112 +1039,107 @@ def recuit2(Cr, Ca, ring):
 #
 
 def evolutionnaire(N, Cr, Ca):
-    T = 200  # Taille de la population
+    T = 10  # Taille de la population
     G = 100  # Nombre maximal de génération
     # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
     # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
-    Pc = 0.8
+    Pc = 0.9
     Pm = 0.8
     L = int(N * 1)  # Taille de RING min pour les individus de grande taille
     if L == N:
         L -= 1  # pour les fct initiate
     NL = int(T * 0.5)  # Nombre d'individus de GT à ajouter
-    best = []  # Tableau du meilleur individu pour chaque génération
-
-    # Initialisation
-    Population = []
-    for i in range(T):
-        RING, STAR = initiaterandom(N)
-        c, PEER = evaluate(RING, STAR, Cr, Ca)
-        Population.append(Individu(RING, STAR, PEER, c))
-
-    for g in range(G):  # G générations se succèdent
-        print("\n" + "Generation : " + str(g))
-
-        # Sélection des couples
-        Couple = []
-        pop = [i for i in range(0, T)]  # liste des indices des individus
-        for i in range(int(T/2)):
-            A = random.choice(pop)
-            pop.remove(A)
-            B = random.choice(pop)
-            pop.remove(B)
-            Couple.append([Population[A], Population[B]])
-
-        # Croisement
-        Enfant = []
-        for i in range(int(T / 2)):
-            chance = random.random()  # chance in [0,1] car pas sûr de croiser
-            if chance > Pc:
-                #print("Pas croisement" + "\n")
-                continue  # il n'y a pas de reproduction
-
-            else:  # il y a reproduction (et donc croisement des caractéristiques)
-                p1 = Couple[i][0].RING
-                p2 = Couple[i][1].RING
-                if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
-                    continue  # équivalent à continue si on était dans la loop
-                else:
-                    e1, e2 = croisement_1pt(p1, p2)
-                    Enfant.append(e1)
-                    Enfant.append(e2)
-
-        # Mutation
-        #Enfant = mutation1(Pm, Enfant)  # mutation par permutation
-        # Enfant = mutation2(Pm, Enfant)         # mutation par inversion
-        Enfant = mutation3(Pm, Enfant, Cr, Ca) #mutation par recuit simulé
-
-        # Construction des individus Enfants
-        for i in range(len(Enfant)):
-            STAR = []
-            for j in range(2, N + 1):
-                if j not in Enfant[i]:
-                    STAR.append(j)
-            c, PEER = evaluate(Enfant[i], STAR, Cr, Ca)
-            Population.append(Individu(Enfant[i], STAR, PEER, c))  # parents + enfants > T -> sélection à faire
-
-        # Sélection d'individus
-        if len(Population) == T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
-            continue
-        else:
-            Population = selection_elitisme(T, Population) # Selection par élitisme.
-            #Population = selection_roulette(T, Population) # Sélection par roulette.
-            #Population = selection_tournoi(T, Population) # Sélection par tournoi.
-            """
-            Population = fourmisSurPopulation(Population, Cr, Ca) # Sélection par colonie de fourmis
-            # Tri des individus de Population selon leur score
-            Population = sorted(Population, key=lambda x: x.Cost)
-            # Nn supprime les individus avec le score le plus élevé
-            for i in range(len(Enfant)):
-                Population.remove(Population[-1])  
-            """
-
-        print("best = " + str(Population[0].Cost))
 
 
-        # Ajout d'individus de grande taille
-        # selon le besoin, commenter/décommenter cette partie :
-        #"""
-        best.append(Population[0].Cost)
-        if g > 10:  # on fait minimum 10 itérations
-            if (best[g-2]/best[g]) < 1.01:  # moins de 1% d'amélioration entre 3 générations
-                for l in range(NL):  # on rajoute NL individus de taille L min
-                    RING, STAR = initiate_GT(N, L)
-                    c, PEER = evaluate(RING, STAR, Cr, Ca)
-                    Population.append(Individu(RING, STAR, PEER, c))
-        #print(len(Population))
-        #"""
-
-    # Affichage
+    # On va faire plusieurs échantillon de population
+    MG = 5
+    best_indv = []
     """
-    print("\n" + "Individus sélectionnés")
-    for i in range(T):
-        print("Individu " + str(i + 1) + "\n" + "RING : " + str(Population[i].RING) + "\n" + "STAR : " + str(
-            Population[i].STAR) + "\n" + "PEER : "
-              + str(Population[i].PEER) + "\n" + "Cost : " + str(Population[i].Cost) + "\n")
-    # """
+    RING, STAR = initiate_GT(N, L)
+    Cost, PEER = evaluate(RING, STAR, Cr, Ca)
+    best_indv.append(Individu(RING, STAR, PEER, Cost))
+    """
+    for m in range(MG):
 
-    return Population
+        # Initialisation
+        Population = []
+        best = []  # Tableau du meilleur individu pour chaque génération
+        for i in range(T):
+            RING, STAR = initiate_GT(N, L)
+            c, PEER = evaluate(RING, STAR, Cr, Ca)
+            Population.append(Individu(RING, STAR, PEER, c))
+
+        for g in range(G):  # G générations se succèdent
+            print("\n" + str(m) + " - Generation : " + str(g))
+
+            # Sélection des couples
+            Couple = []
+            pop = [i for i in range(0, T)]  # liste des indices des individus
+            for i in range(int(T / 2)):
+                A = random.choice(pop)
+                pop.remove(A)
+                B = random.choice(pop)
+                pop.remove(B)
+                Couple.append([Population[A], Population[B]])
+
+            # Croisement
+            Enfant = []
+            for i in range(int(T / 2)):
+                chance = random.random()  # chance in [0,1] car pas sûr de croiser
+                if chance > Pc:
+                    # print("Pas croisement" + "\n")
+                    continue  # il n'y a pas de reproduction
+
+                else:  # il y a reproduction (et donc croisement des caractéristiques)
+                    p1 = Couple[i][0].RING
+                    p2 = Couple[i][1].RING
+                    if len(p1) == 1 or len(p2) == 1:  # si l'indidividu est de taille 1, on ne croise pas
+                        continue  # équivalent à continue si on était dans la loop
+                    else:
+                        e1, e2 = croisement_1pt(p1, p2)
+                        Enfant.append(e1)
+                        Enfant.append(e2)
+
+            # Mutation
+            #Enfant = mutation1(Pm, Enfant)  # mutation par permutation
+            #Enfant = mutation2(Pm, Enfant)         # mutation par inversion
+            Enfant = mutation3(Pm, Enfant, Cr, Ca)  # mutation par recuit simulé
+
+            # Construction des individus Enfants
+            for i in range(len(Enfant)):
+                STAR = []
+                for j in range(2, N + 1):
+                    if j not in Enfant[i]:
+                        STAR.append(j)
+                c, PEER = evaluate(Enfant[i], STAR, Cr, Ca)
+                Population.append(Individu(Enfant[i], STAR, PEER, c))  # parents + enfants > T -> sélection à faire
+
+            # Sélection d'individus
+            if len(Population) == T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
+                continue
+            else:
+                Population = selection_elitisme(T, Population)  # Selection par élitisme.
+                # Population = selection_roulette(T, Population) # Sélection par roulette.
+                # Population = selection_tournoi(T, Population) # Sélection par tournoi.
+
+            # print(Population[0].RING)
+            print("best = " + str(Population[0].Cost))
+            #print(6,Population[0].Cost)
+            best.append(Population[0].Cost)
+            print(best)
+            #print(7,len(best))
+
+            #print(8,g)
+            # Break si on est bloqué sur un minimum
+            if g > 16:
+             #   print(g)
+                if best[g - 14] == best[g]:
+                    best_indv.append(Population[0])  # on sauve le nvx meilleur
+                    break  # on passe à l'échantillon suivant
+
+
+    return best_indv
+
 
 ######################################################################
 #                               MAIN                                 #
@@ -1104,16 +1155,20 @@ if __name__ == '__main__':
     cout = 0
 
     # Nom du dataset à lire dans le sous-dossier 'Datasets'.
-    file = "data7"
+    file = "data3"
 
     # Extraction des données
     N, Ca, Cr = dataExtract(file)
 
     # Choix de l'algorithme à executer
-    #Ring, Star, Link = recuit(Cr, Ca)
+    # Ring, Star, Link = recuit(Cr, Ca)
+    a = time.time()
     popu = evolutionnaire(N, Cr, Ca)
-    #mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)
-
+    popu = sorted(popu, key=lambda x: x.Cost)
+    for i in range(len(popu) - 1):  # le dernier a juste servi au calibrage
+        print(popu[i].Cost)
+    print(time.time() - a)
+    # mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)
 
     # Sélection de la meilleure configuration parmi la population
     # >>>>>>>>>>> A FAIRE <<<<<<<<<<<<
