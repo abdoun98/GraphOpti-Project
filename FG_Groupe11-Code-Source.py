@@ -937,10 +937,10 @@ def preRecuit2(Ca, ring):
 
 #Recuit simulé adapté à l'algo évolutionnaire
 def recuit2(Cr, Ca, ring):
-    nbrItr = 100
+    nbrItr = 10
 
-    t = 1000000
-    tf = 1
+    t = 3
+    tf = 0.1
     N = 0.9
 
     # fonction qui va générer le star et le link en fonction du ring passé en paramètre
@@ -983,7 +983,7 @@ def recuit2(Cr, Ca, ring):
 #
 
 def evolutionnaire(N, Cr, Ca):
-    T = 800  # Taille de la population
+    T = 200  # Taille de la population
     G = 100  # Nombre maximal de génération
     # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
     # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
@@ -1034,9 +1034,9 @@ def evolutionnaire(N, Cr, Ca):
                     Enfant.append(e2)
 
         # Mutation
-        Enfant = mutation1(Pm, Enfant)  # mutation par permutation
+        #Enfant = mutation1(Pm, Enfant)  # mutation par permutation
         # Enfant = mutation2(Pm, Enfant)         # mutation par inversion
-        # Enfant = mutation3(Pm, Enfant, Cr, Ca) #mutation par recuit simulé
+        Enfant = mutation3(Pm, Enfant, Cr, Ca) #mutation par recuit simulé
 
         # Construction des individus Enfants
         for i in range(len(Enfant)):
@@ -1104,7 +1104,7 @@ if __name__ == '__main__':
     cout = 0
 
     # Nom du dataset à lire dans le sous-dossier 'Datasets'.
-    file = "data1"
+    file = "data7"
 
     # Extraction des données
     N, Ca, Cr = dataExtract(file)

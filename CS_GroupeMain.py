@@ -939,9 +939,9 @@ def preRecuit2(Ca, ring):
 
 #Recuit simulé adapté à l'algo évolutionnaire
 def recuit2(Cr, Ca, ring):
-    nbrItr = 100
+    nbrItr = 20
 
-    t = 100
+    t = 3
     tf = 0.1
     N = 0.9
 
@@ -985,8 +985,8 @@ def recuit2(Cr, Ca, ring):
 #
 
 def evolutionnaire(N, Cr, Ca):
-    T = 800  # Taille de la population
-    G = 25  # Nombre maximal de génération
+    T = 400  # Taille de la population
+    G = 100  # Nombre maximal de génération
     # Pc = random.uniform(0.5, 0.9)  # Probabilité de croisement
     # Pm = random.uniform(0.05, 0.1)  # Probabilité de mutation
     Pc = 0.8
@@ -996,7 +996,7 @@ def evolutionnaire(N, Cr, Ca):
         L -= 1  # pour les fct initiate
     NL = int(T * 0.5)  # Nombre d'individus de GT à ajouter
     best = []  # Tableau du meilleur individu pour chaque génération
-
+    best_indv = []
     # Initialisation
     Population = []
     for i in range(T):
@@ -1050,9 +1050,7 @@ def evolutionnaire(N, Cr, Ca):
             Population.append(Individu(Enfant[i], STAR, PEER, c))  # parents + enfants > T -> sélection à faire
 
         # Sélection d'individus
-        if len(Population) == T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
-            continue
-        else:
+        if len(Population) != T:  # si aucun croisement n'a eu lieu à cause de Pc, il n'y a pas de sélection
             Population = selection_elitisme(T, Population) # Selection par élitisme.
             #Population = selection_roulette(T, Population) # Sélection par roulette.
             #Population = selection_tournoi(T, Population) # Sélection par tournoi.
@@ -1072,12 +1070,21 @@ def evolutionnaire(N, Cr, Ca):
         # selon le besoin, commenter/décommenter cette partie :
         #"""
         best.append(Population[0].Cost)
+        '''
         if g > 10:  # on fait minimum 10 itérations
-            if (best[g-2]/best[g]) < 1.01:  # moins de 1% d'amélioration entre 3 générations
+            print(g, best)
+            if (best[g-3]/best[g-1]) < 1.01:  # moins de 1% d'amélioration entre 3 générations
                 for l in range(NL):  # on rajoute NL individus de taille L min
                     RING, STAR = initiate_GT(N, L)
                     c, PEER = evaluate(RING, STAR, Cr, Ca)
                     Population.append(Individu(RING, STAR, PEER, c))
+        '''
+        # Break si on est bloqué sur un minimum
+        if g > 16:
+            #   print(g)
+            if best[g - 14] == best[g]:
+                best_indv.append(Population[0])  # on sauve le nvx meilleur
+                break  # on passe à l'échantillon suivant
         #print(len(Population))
         #"""
 
@@ -1106,37 +1113,28 @@ if __name__ == '__main__':
     cout = 0
 
     # Nom du dataset à lire dans le sous-dossier 'Datasets'.
-    file = "data1"
+    file = "data4"
 
     # Extraction des données
     N, Ca, Cr = dataExtract(file)
 
     # Choix de l'algorithme à executer
-    Ring, Star, Link = recuit(Cr, Ca, t= 1000, tf=1, N= 0.99, nbrItr=1000)
+    #Ring, Star, Link = recuit(Cr, Ca, t= 1000, tf=1, N= 0.99, nbrItr=1000)
     popu = evolutionnaire(N, Cr, Ca)
-    mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)
+    #mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)
 
 
     # Sélection de la meilleure configuration parmi la population
-    bestScore = (math.inf, None)
-    score = getScore(Cr, Ca, Ring, Star, Link)
-    if score < bestScore[0]:
-        bestScore = score, "recuit"
-        horsRing = []
-        ring = Ring
-        for i, elem in enumerate(Star):
-            horsRing.append((elem, Link[i]))
-    if mcout < bestScore[0]:
-        bestScore = mcout, "CDF"
-        ring = mlisteRing
-        for i, elem in enumerate(listeHorsRing):
-            horsRing.append((elem, listeLienHorsRing[i]))
-    if popu[0].Cost < bestScore[0]:
-        bestScore = mcout, "evolutionnaire"
-        ring = popu[0].RING
-        for i, elem in enumerate(popu[0].STAR):
-            horsRing.append((elem, popu[0].PEER))
-    print(bestScore)
+    ring = popu[0].RING
+    star = popu[0].STAR
+    link = []
+    for i, elem in enumerate(popu[0].STAR):
+        link.append( popu[0].PEER)
+    score, peer = evaluate(ring, star, Cr, Ca)
+
+    print(ring)
+    print(star)
+    print(link)
 
     # Ecriture de la solution dans le sous-dossier 'Outputs'.
-    writeOutput(file, ring, horsRing, cout)
+    writeOutput(file, ring, peer, score)
