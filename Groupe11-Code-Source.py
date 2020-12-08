@@ -1018,8 +1018,8 @@ def recuit2(Cr, Ca, ring):
 
 def evolutionnaire(N, Cr, Ca, t_max):
     # paramètres à modifier
-    T = 10  # Taille de la population
-    G = 20  # Nombre maximal de génération
+    T = 100  # Taille de la population
+    G = 100  # Nombre maximal de génération
     Pc = 0.9  # Probabilité de croisement
     Pm = 0.8  # Probabilité de mutation
 
@@ -1125,7 +1125,7 @@ def evolutionnaire(N, Cr, Ca, t_max):
                 if best[g - 14] == best[g]:
                     best_indv.append(Population[0])  # on sauve le nvx meilleur
                     break  # on passe à l'échantillon suivant
-            elif g == G:
+            elif g == G-1:
                 best_indv.append(Population[0])
     print(len(best_indv))
 
@@ -1148,7 +1148,7 @@ if __name__ == '__main__':
     cout = 0
 
     # Nom du dataset à lire dans le sous-dossier 'Datasets'.
-    file = "data2"
+    file = "data8"
 
     # Extraction des données
     N, Ca, Cr = dataExtract(file)
@@ -1156,11 +1156,12 @@ if __name__ == '__main__':
     # Choix de l'algorithme à executer
     a = time.time()
     # Ring, Star, Link = recuit(Cr, Ca)  # Methode 1
-    popu = evolutionnaire(N, Cr, Ca, 1)  # Méthode 2
+    popu = evolutionnaire(N, Cr, Ca, 600)  # Méthode 2
     popu = sorted(popu, key=lambda x: x.Cost)
     for i in range(len(popu)):
         print(popu[i].Cost)
     # mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)  # Methode 3
+    # ring,star,horsRing=conversionRetour(listeRing,listeHorsRing,listeLienHorsRing)
     print("Temps = " + str(time.time() - a))
 
     #Pourcentage de remplissage du RING
