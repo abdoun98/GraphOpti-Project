@@ -1155,12 +1155,12 @@ if __name__ == '__main__':
     # Choix de l'algorithme à executer
     a = time.time()
     # Ring, Star, Link = recuit(Cr, Ca)  # Methode 1
-    '''popu = evolutionnaire(N, Cr, Ca, 600)  # Méthode 2
+    popu = evolutionnaire(N, Cr, Ca, 600)  # Méthode 2
     popu = sorted(popu, key=lambda x: x.Cost)
     for i in range(len(popu)):
-        print(popu[i].Cost)'''
-    listeRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)  # Methode 3
-    ring,star,horsRing=conversionRetour(listeRing, listeHorsRing, listeLienHorsRing)
+        print(popu[i].Cost)
+    #listeRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)  # Methode 3
+    #ring,star,horsRing=conversionRetour(listeRing, listeHorsRing, listeLienHorsRing)
     print("Temps = " + str(time.time() - a))
 
     #Pourcentage de remplissage du RING
