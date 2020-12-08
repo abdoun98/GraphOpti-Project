@@ -38,6 +38,7 @@ import time
 def dataExtract(file):
     Cr = []  # cout du ring
     Ca = []  # cout des liens vers ring
+    #with open("Challenge-datasets/" + file + ".txt") as f:
     with open("Datasets/" + file + ".txt") as f:
         data = f.readline()
         data = data.split()
@@ -59,6 +60,7 @@ def dataExtract(file):
 
 # ECRITURE
 def writeOutput(file, listRing, listHorsRing, cout):
+    #with open("Challenge-outputs/Groupe11-Challenge" + file + ".txt", "w") as f:
     with open("Outputs/output-" + file + ".txt", "w") as f:
         f.write("RING {}\n".format(len(listRing)))
         for elem in listRing:
