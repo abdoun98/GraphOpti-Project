@@ -444,16 +444,15 @@ def conversionAller(RING, PEER):
         listeLienHorsRing += [i[1]]
     return listeRing, listeHorsRing, listeLienHorsRing
 
-
-def conversionRetour(listeRing, listeHorsRing=[], listeLienHorsRing=[]):
+def conversionRetour(listeRing, listeHorsRing, listeLienHorsRing):
     RING = np.array(listeRing) + np.ones((1, len(listeRing)))
-    RING = np.array(RING.tolist(), dtype='int').tolist()[0]
-    RING = RING[RING.index(1.):len(RING)] + RING[:RING.index(1)]
-    '''PEER=[]
+    RING=np.array(RING.tolist(), dtype='int').tolist()[0]
+    RING=RING[RING.index(1.):len(RING)]+RING[:RING.index(1)]
+    PEER=[]
     STAR=listeHorsRing
-    for i in range(listeLienHorsRing):
-        PEER+=[[listeHorsRing[i],listeLienHorsRing[i]]]'''
-    return RING
+    for i in range(len(listeLienHorsRing)):
+        PEER+=[[listeHorsRing[i]+1,listeLienHorsRing[i]+1]]
+    return RING,STAR,PEER
 
 
 def deposeFerom(dferom, listeRing, listeRingRef, Q, cout):
@@ -1148,7 +1147,7 @@ if __name__ == '__main__':
     cout = 0
 
     # Nom du dataset à lire dans le sous-dossier 'Datasets'.
-    file = "data8"
+    file = "data1"
 
     # Extraction des données
     N, Ca, Cr = dataExtract(file)
@@ -1156,12 +1155,12 @@ if __name__ == '__main__':
     # Choix de l'algorithme à executer
     a = time.time()
     # Ring, Star, Link = recuit(Cr, Ca)  # Methode 1
-    popu = evolutionnaire(N, Cr, Ca, 600)  # Méthode 2
+    '''popu = evolutionnaire(N, Cr, Ca, 600)  # Méthode 2
     popu = sorted(popu, key=lambda x: x.Cost)
     for i in range(len(popu)):
-        print(popu[i].Cost)
-    # mlisteRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)  # Methode 3
-    # ring,star,horsRing=conversionRetour(listeRing,listeHorsRing,listeLienHorsRing)
+        print(popu[i].Cost)'''
+    listeRing, listeHorsRing, listeLienHorsRing, mcout = CDF(50, 50, 20, 1, 1, 1, 0.75)  # Methode 3
+    ring,star,horsRing=conversionRetour(listeRing, listeHorsRing, listeLienHorsRing)
     print("Temps = " + str(time.time() - a))
 
     #Pourcentage de remplissage du RING
